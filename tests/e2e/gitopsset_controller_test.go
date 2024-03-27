@@ -17,11 +17,9 @@ import (
 	"github.com/onsi/gomega"
 	corev1 "k8s.io/api/core/v1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	apimeta "k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
-	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -30,12 +28,6 @@ import (
 
 	clustersv1 "github.com/weaveworks/cluster-controller/api/v1alpha1"
 )
-
-var kustomizationGVK = schema.GroupVersionKind{
-	Group:   "kustomize.toolkit.fluxcd.io",
-	Kind:    "Kustomization",
-	Version: "v1beta2",
-}
 
 func TestReconcilingNewCluster(t *testing.T) {
 	ctx := context.TODO()
@@ -49,7 +41,7 @@ func TestReconcilingNewCluster(t *testing.T) {
 	})
 
 	test.AssertNoError(t, testEnv.Create(ctx, test.ToUnstructured(t, gc)))
-	defer deleteObject(t, testEnv, gc)
+	defer test.AssertNoError(t, testEnv.Cleanup(ctx, gc))
 
 	gs := &templatesv1.GitOpsSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -91,7 +83,7 @@ func TestReconcilingNewCluster(t *testing.T) {
 	}
 
 	test.AssertNoError(t, testEnv.Create(ctx, gs))
-	defer deleteGitOpsSetAndWaitForNotFound(t, testEnv, gs)
+	defer test.AssertNoError(t, testEnv.CleanupAndWait(ctx, gs))
 
 	waitForGitOpsSetCondition(t, testEnv, gs, "1 resources created")
 
@@ -104,7 +96,7 @@ func TestReconcilingNewCluster(t *testing.T) {
 	})
 
 	test.AssertNoError(t, testEnv.Create(ctx, test.ToUnstructured(t, gc2)))
-	defer deleteObject(t, testEnv, gc2)
+	defer test.AssertNoError(t, testEnv.Cleanup(ctx, gc2))
 
 	waitForGitOpsSetCondition(t, testEnv, gs, "2 resources created")
 
@@ -133,7 +125,7 @@ func TestReconcilingPartialApply(t *testing.T) {
 		}
 	})
 	test.AssertNoError(t, testEnv.Create(ctx, prodCM))
-	defer deleteObject(t, testEnv, prodCM)
+	defer test.AssertNoError(t, testEnv.Cleanup(ctx, prodCM))
 
 	gs := &templatesv1.GitOpsSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -167,7 +159,7 @@ func TestReconcilingPartialApply(t *testing.T) {
 		},
 	}
 	test.AssertNoError(t, testEnv.Create(ctx, gs))
-	defer deleteGitOpsSetAndWaitForNotFound(t, testEnv, gs)
+	defer test.AssertNoError(t, testEnv.CleanupAndWait(ctx, gs))
 
 	waitForGitOpsSetCondition(t, testEnv, gs, `failed to create Resource: configmaps \"engineering-prod-cm\" already exists`)
 
@@ -217,7 +209,7 @@ func TestGenerateNamespace(t *testing.T) {
 	}
 
 	test.AssertNoError(t, testEnv.Create(ctx, gs))
-	defer deleteGitOpsSetAndWaitForNotFound(t, testEnv, gs)
+	defer test.AssertNoError(t, testEnv.CleanupAndWait(ctx, gs))
 
 	waitForGitOpsSetCondition(t, testEnv, gs, "2 resources created")
 	test.AssertNoError(t, testEnv.Get(ctx, client.ObjectKeyFromObject(gs), gs))
@@ -267,7 +259,7 @@ func TestReconcilingWithAnnotationChange(t *testing.T) {
 		},
 	}
 	test.AssertNoError(t, testEnv.Create(ctx, gs))
-	defer deleteGitOpsSetAndWaitForNotFound(t, testEnv, gs)
+	defer test.AssertNoError(t, testEnv.CleanupAndWait(ctx, gs))
 
 	waitForGitOpsSetCondition(t, testEnv, gs, "2 resources created")
 
@@ -305,7 +297,7 @@ func TestReconcilingUpdatingImagePolicy(t *testing.T) {
 	ip := test.NewImagePolicy()
 
 	test.AssertNoError(t, testEnv.Create(ctx, test.ToUnstructured(t, ip)))
-	defer deleteObject(t, testEnv, ip)
+	defer test.AssertNoError(t, testEnv.Cleanup(ctx, ip))
 
 	ip = waitForResource[*imagev1.ImagePolicy](t, testEnv, ip)
 	ip.Status.LatestImage = "testing/test:v0.30.0"
@@ -341,7 +333,7 @@ func TestReconcilingUpdatingImagePolicy(t *testing.T) {
 	}
 
 	test.AssertNoError(t, testEnv.Create(ctx, gs))
-	defer deleteGitOpsSetAndWaitForNotFound(t, testEnv, gs)
+	defer test.AssertNoError(t, testEnv.CleanupAndWait(ctx, gs))
 
 	ip = waitForResource[*imagev1.ImagePolicy](t, testEnv, ip)
 	ip.Status.LatestImage = "testing/test:v0.31.0"
@@ -365,7 +357,7 @@ func TestReconcilingUpdatingImagePolicy_in_matrix(t *testing.T) {
 	ip := test.NewImagePolicy()
 
 	test.AssertNoError(t, testEnv.Create(ctx, test.ToUnstructured(t, ip)))
-	defer deleteObject(t, testEnv, ip)
+	defer test.AssertNoError(t, testEnv.Cleanup(ctx, ip))
 
 	test.AssertNoError(t, testEnv.Get(ctx, client.ObjectKeyFromObject(ip), ip))
 	ip.Status.LatestImage = "testing/test:v0.30.0"
@@ -415,7 +407,7 @@ func TestReconcilingUpdatingImagePolicy_in_matrix(t *testing.T) {
 	}
 
 	test.AssertNoError(t, testEnv.Create(ctx, gs))
-	defer deleteGitOpsSetAndWaitForNotFound(t, testEnv, gs)
+	defer test.AssertNoError(t, testEnv.CleanupAndWait(ctx, gs))
 
 	waitForGitOpsSetCondition(t, testEnv, gs, "2 resources created")
 
@@ -485,7 +477,7 @@ func TestGitOpsSetUpdateOnGitRepoChange(t *testing.T) {
 	}
 
 	test.AssertNoError(t, testEnv.Create(ctx, gs))
-	defer deleteGitOpsSetAndWaitForNotFound(t, testEnv, gs)
+	defer test.AssertNoError(t, testEnv.CleanupAndWait(ctx, gs))
 
 	waitForGitOpsSetInventory(t, testEnv, gs, test.MakeTestKustomization(nsn("default", "eng-dev-demo")))
 
@@ -550,7 +542,7 @@ func TestGitOpsSetUpdateOnOCIRepoChange(t *testing.T) {
 	}
 
 	test.AssertNoError(t, testEnv.Create(ctx, gs))
-	defer deleteGitOpsSetAndWaitForNotFound(t, testEnv, gs)
+	defer test.AssertNoError(t, testEnv.CleanupAndWait(ctx, gs))
 
 	waitForGitOpsSetInventory(t, testEnv, gs, test.MakeTestKustomization(nsn("default", "eng-dev-demo")))
 
@@ -572,7 +564,7 @@ func TestReconcilingUpdatingConfigMap(t *testing.T) {
 	})
 
 	test.AssertNoError(t, testEnv.Create(ctx, test.ToUnstructured(t, src)))
-	defer deleteObject(t, testEnv, src)
+	defer test.AssertNoError(t, testEnv.Cleanup(ctx, src))
 
 	gs := &templatesv1.GitOpsSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -604,7 +596,7 @@ func TestReconcilingUpdatingConfigMap(t *testing.T) {
 	}
 
 	test.AssertNoError(t, testEnv.Create(ctx, gs))
-	defer deleteGitOpsSetAndWaitForNotFound(t, testEnv, gs)
+	defer test.AssertNoError(t, testEnv.CleanupAndWait(ctx, gs))
 	waitForGitOpsSetCondition(t, testEnv, gs, "1 resources created")
 
 	test.AssertNoError(t, testEnv.Get(ctx, client.ObjectKeyFromObject(src), src))
@@ -627,7 +619,7 @@ func TestReconcilingUpdatingConfigMap_in_matrix(t *testing.T) {
 	})
 
 	test.AssertNoError(t, testEnv.Create(ctx, test.ToUnstructured(t, src)))
-	defer deleteObject(t, testEnv, src)
+	defer test.AssertNoError(t, testEnv.Cleanup(ctx, src))
 
 	gs := &templatesv1.GitOpsSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -673,7 +665,7 @@ func TestReconcilingUpdatingConfigMap_in_matrix(t *testing.T) {
 	}
 
 	test.AssertNoError(t, testEnv.Create(ctx, gs))
-	defer deleteGitOpsSetAndWaitForNotFound(t, testEnv, gs)
+	defer test.AssertNoError(t, testEnv.CleanupAndWait(ctx, gs))
 	waitForGitOpsSetCondition(t, testEnv, gs, "1 resources created")
 
 	test.AssertNoError(t, testEnv.Get(ctx, client.ObjectKeyFromObject(src), src))
@@ -697,7 +689,7 @@ func TestReconcilingUpdatingSecret(t *testing.T) {
 	})
 
 	test.AssertNoError(t, testEnv.Create(ctx, test.ToUnstructured(t, src)))
-	defer deleteObject(t, testEnv, src)
+	defer test.AssertNoError(t, testEnv.Cleanup(ctx, src))
 
 	gs := &templatesv1.GitOpsSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -729,7 +721,7 @@ func TestReconcilingUpdatingSecret(t *testing.T) {
 	}
 
 	test.AssertNoError(t, testEnv.Create(ctx, gs))
-	defer deleteGitOpsSetAndWaitForNotFound(t, testEnv, gs)
+	defer test.AssertNoError(t, testEnv.CleanupAndWait(ctx, gs))
 	waitForGitOpsSetCondition(t, testEnv, gs, "1 resources created")
 
 	test.AssertNoError(t, testEnv.Get(ctx, client.ObjectKeyFromObject(src), src))
@@ -752,7 +744,7 @@ func TestReconcilingUpdatingSecret_in_matrix(t *testing.T) {
 	})
 
 	test.AssertNoError(t, testEnv.Create(ctx, test.ToUnstructured(t, src)))
-	defer deleteObject(t, testEnv, src)
+	defer test.AssertNoError(t, testEnv.Cleanup(ctx, src))
 
 	gs := &templatesv1.GitOpsSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -798,7 +790,7 @@ func TestReconcilingUpdatingSecret_in_matrix(t *testing.T) {
 	}
 
 	test.AssertNoError(t, testEnv.Create(ctx, gs))
-	defer deleteGitOpsSetAndWaitForNotFound(t, testEnv, gs)
+	defer test.AssertNoError(t, testEnv.CleanupAndWait(ctx, gs))
 	waitForGitOpsSetCondition(t, testEnv, gs, "1 resources created")
 
 	test.AssertNoError(t, testEnv.Get(ctx, client.ObjectKeyFromObject(src), src))
@@ -920,7 +912,7 @@ func TestEventsWithReconciling(t *testing.T) {
 	})
 
 	test.AssertNoError(t, testEnv.Create(ctx, test.ToUnstructured(t, gc)))
-	defer deleteObject(t, testEnv, gc)
+	defer test.AssertNoError(t, testEnv.Cleanup(ctx, gc))
 
 	gs := &templatesv1.GitOpsSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -961,7 +953,7 @@ func TestEventsWithReconciling(t *testing.T) {
 	}
 
 	test.AssertNoError(t, testEnv.Create(ctx, gs))
-	defer deleteGitOpsSetAndWaitForNotFound(t, testEnv, gs)
+	defer test.AssertNoError(t, testEnv.CleanupAndWait(ctx, gs))
 
 	want := &test.EventData{
 		EventType: "Normal",
@@ -987,7 +979,7 @@ func TestEventsWithFailingReconciling(t *testing.T) {
 		}
 	})
 	test.AssertNoError(t, testEnv.Create(ctx, prodCM))
-	defer deleteObject(t, testEnv, prodCM)
+	defer test.AssertNoError(t, testEnv.Cleanup(ctx, prodCM))
 
 	gs := &templatesv1.GitOpsSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -1021,7 +1013,7 @@ func TestEventsWithFailingReconciling(t *testing.T) {
 		},
 	}
 	test.AssertNoError(t, testEnv.Create(ctx, gs))
-	defer deleteGitOpsSetAndWaitForNotFound(t, testEnv, gs)
+	defer test.AssertNoError(t, testEnv.CleanupAndWait(ctx, gs))
 
 	g := gomega.NewWithT(t)
 	g.Eventually(func() bool {
@@ -1035,24 +1027,6 @@ func TestEventsWithFailingReconciling(t *testing.T) {
 
 		return cmp.Diff(want, eventRecorder.Events, cmpopts.IgnoreFields(test.EventData{}, "Message")) == ""
 	}, timeout).Should(gomega.BeTrue())
-}
-
-func deleteGitOpsSetAndWaitForNotFound(t *testing.T, cl client.Client, gs *templatesv1.GitOpsSet) {
-	t.Helper()
-	deleteObject(t, cl, gs)
-
-	g := gomega.NewWithT(t)
-	g.Eventually(func() bool {
-		updated := &templatesv1.GitOpsSet{}
-		return apierrors.IsNotFound(cl.Get(ctx, client.ObjectKeyFromObject(gs), updated))
-	}, timeout).Should(gomega.BeTrue())
-}
-
-func deleteObject(t *testing.T, cl client.Client, obj client.Object) {
-	t.Helper()
-	if err := cl.Delete(context.TODO(), obj); err != nil {
-		t.Fatal(err)
-	}
 }
 
 func mustMarshalJSON(t *testing.T, r runtime.Object) []byte {
