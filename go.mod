@@ -20,7 +20,7 @@ require (
 	github.com/go-logr/logr v1.4.1
 	github.com/go-logr/zapr v1.3.0
 	github.com/google/go-cmp v0.6.0
-	github.com/google/go-containerregistry v0.12.0
+	github.com/google/go-containerregistry v0.19.1
 	github.com/jenkins-x/go-scm v1.14.29
 	github.com/onsi/gomega v1.32.0
 	github.com/spf13/cobra v1.8.0
