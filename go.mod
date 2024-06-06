@@ -1,6 +1,7 @@
 module github.com/gitops-tools/gitopssets-controller
 
-go 1.22.0
+go 1.22.3
+
 require (
 	dario.cat/mergo v1.0.0
 	github.com/Masterminds/sprig/v3 v3.2.3
