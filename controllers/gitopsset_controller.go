@@ -388,6 +388,8 @@ func (r *GitOpsSetReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	// Only watch for GitopsCluster objects if the Cluster generator is enabled.
 	if r.Generators["Cluster"] != nil {
+		// TODO: How do we pass the type through?
+		// TODO: use https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.19.1/pkg/builder#TypedBuilder.WatchesMetadata
 		builder.Watches(
 			&clustersv1.GitopsCluster{},
 			handler.EnqueueRequestsFromMapFunc(r.gitOpsClusterToGitOpsSet),
