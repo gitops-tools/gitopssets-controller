@@ -48,6 +48,8 @@ const (
 	imagePolicyIndexKey   string = ".metadata.imagePolicy"
 	configMapIndexKey     string = ".metadata.configMap"
 	secretIndexKey        string = ".metadata.secret"
+
+	fieldOwner string = "gitopssets-controller"
 )
 
 type eventRecorder interface {
@@ -249,26 +251,14 @@ func (r *GitOpsSetReconciler) renderAndReconcile(ctx context.Context, logger log
 		}
 
 		if existingEntries.Has(ref) {
-			existing, err := unstructuredFromResourceRef(ref)
-			if err != nil {
-				inventoryErr = errors.Join(inventoryErr, fmt.Errorf("failed to convert resource for update: %w", err))
-				continue
-			}
 			// We can add the entry because we know it exists
 			entries.Insert(ref)
-			err = k8sClient.Get(ctx, client.ObjectKeyFromObject(newResource), existing)
-			if err == nil {
-				newResource = copyUnstructuredContent(existing, newResource)
-				if err := k8sClient.Patch(ctx, newResource, client.MergeFrom(existing)); err != nil {
-					inventoryErr = errors.Join(inventoryErr, fmt.Errorf("failed to update Resource: %w", err))
-				}
-				continue
-			}
 
-			if !apierrors.IsNotFound(err) {
-				inventoryErr = errors.Join(inventoryErr, fmt.Errorf("failed to load existing Resource: %w", err))
-				continue
+			// SSA the resource into the cluster
+			if err := k8sClient.Patch(ctx, newResource, client.Apply, client.ForceOwnership, client.FieldOwner(fieldOwner)); err != nil {
+				inventoryErr = errors.Join(inventoryErr, fmt.Errorf("failed to update Resource: %w", err))
 			}
+			continue
 		}
 
 		if err := logResourceMessage(logger, "creating new resource", newResource); err != nil {
