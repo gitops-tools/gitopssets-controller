@@ -119,7 +119,7 @@ func TestClusterGenerator_Generate(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			c := newFakeClient(t, tt.clusters...)
-			g := NewGenerator(logr.Discard(), c)
+			g := NewGenerator(logr.Discard(), c, clustersv1.GroupVersion.WithKind("GitopsClusterList"))
 
 			gotParams, err := g.Generate(t.Context(), tt.sg, nil)
 
