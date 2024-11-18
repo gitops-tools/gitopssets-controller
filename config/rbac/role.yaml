@@ -27,32 +27,6 @@ rules:
   verbs:
   - impersonate
 - apiGroups:
-  - gitops.pro
-  resources:
-  - gitopssets
-  verbs:
-  - create
-  - delete
-  - get
-  - list
-  - patch
-  - update
-  - watch
-- apiGroups:
-  - gitops.pro
-  resources:
-  - gitopssets/finalizers
-  verbs:
-  - update
-- apiGroups:
-  - gitops.pro
-  resources:
-  - gitopssets/status
-  verbs:
-  - get
-  - patch
-  - update
-- apiGroups:
   - gitops.weave.works
   resources:
   - gitopsclusters
@@ -68,6 +42,32 @@ rules:
   - get
   - list
   - watch
+- apiGroups:
+  - sets.gitops.pro
+  resources:
+  - gitopssets
+  verbs:
+  - create
+  - delete
+  - get
+  - list
+  - patch
+  - update
+  - watch
+- apiGroups:
+  - sets.gitops.pro
+  resources:
+  - gitopssets/finalizers
+  verbs:
+  - update
+- apiGroups:
+  - sets.gitops.pro
+  resources:
+  - gitopssets/status
+  verbs:
+  - get
+  - patch
+  - update
 - apiGroups:
   - source.toolkit.fluxcd.io
   resources:
