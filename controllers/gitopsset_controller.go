@@ -13,7 +13,8 @@ import (
 	"github.com/fluxcd/pkg/runtime/conditions"
 	runtimeCtrl "github.com/fluxcd/pkg/runtime/controller"
 	"github.com/fluxcd/pkg/runtime/predicates"
-	sourcev1 "github.com/fluxcd/source-controller/api/v1beta2"
+	sourcev1 "github.com/fluxcd/source-controller/api/v1"
+	sourcev1beta2 "github.com/fluxcd/source-controller/api/v1beta2"
 	"github.com/gitops-tools/pkg/sets"
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
@@ -370,7 +371,7 @@ func (r *GitOpsSetReconciler) SetupWithManager(mgr ctrl.Manager) error {
 
 	if r.Generators["OCIRepository"] != nil {
 		builder.Watches(
-			&sourcev1.OCIRepository{},
+			&sourcev1beta2.OCIRepository{},
 			handler.EnqueueRequestsFromMapFunc(r.ociRepositoryToGitOpsSet),
 		)
 	}
