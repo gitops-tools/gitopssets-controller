@@ -81,14 +81,12 @@ func ValidateEnabledGenerators(enabledGenerators []string) error {
 // GetGenerators returns a set of generator factories for the set of enabled
 // generators.
 func GetGenerators(enabledGenerators []string, fetcher parser.ArchiveFetcher, clientFactory apiclient.HTTPClientFactory) map[string]generators.GeneratorFactory {
-	clusterGVK := clustersv1.GroupVersion.WithKind("GitopsClusterList")
-
 	matrixGenerators := filterEnabledGenerators(enabledGenerators, map[string]generators.GeneratorFactory{
 		"List":          list.GeneratorFactory,
 		"GitRepository": gitrepository.GeneratorFactory(fetcher),
 		"OCIRepository": ocirepository.GeneratorFactory(fetcher),
 		"PullRequests":  pullrequests.GeneratorFactory,
-		"Cluster":       cluster.GeneratorFactory(clusterGVK),
+		"Cluster":       cluster.GeneratorFactory(templatesv1.GitopsClusterListGVK),
 		"ImagePolicy":   imagepolicy.GeneratorFactory,
 		"APIClient":     apiclient.GeneratorFactory(clientFactory),
 		"Config":        config.GeneratorFactory,
@@ -99,7 +97,7 @@ func GetGenerators(enabledGenerators []string, fetcher parser.ArchiveFetcher, cl
 		"GitRepository": gitrepository.GeneratorFactory(fetcher),
 		"OCIRepository": ocirepository.GeneratorFactory(fetcher),
 		"PullRequests":  pullrequests.GeneratorFactory,
-		"Cluster":       cluster.GeneratorFactory(clusterGVK),
+		"Cluster":       cluster.GeneratorFactory(templatesv1.GitopsClusterListGVK),
 		"APIClient":     apiclient.GeneratorFactory(clientFactory),
 		"ImagePolicy":   imagepolicy.GeneratorFactory,
 		"Matrix":        matrix.GeneratorFactory(matrixGenerators),

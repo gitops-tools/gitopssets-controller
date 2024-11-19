@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	syslog "log"
 	"sort"
 	"time"
 
@@ -24,6 +25,7 @@ import (
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/schema"
 	"k8s.io/client-go/rest"
 	"sigs.k8s.io/cli-utils/pkg/object"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -38,7 +40,6 @@ import (
 	templatesv1 "github.com/gitops-tools/gitopssets-controller/api/v1alpha1"
 	"github.com/gitops-tools/gitopssets-controller/controllers/templates"
 	"github.com/gitops-tools/gitopssets-controller/pkg/generators"
-	clustersv1 "github.com/weaveworks/cluster-controller/api/v1alpha1"
 )
 
 var accessor = meta.NewAccessor()
@@ -390,9 +391,9 @@ func (r *GitOpsSetReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	if r.Generators["Cluster"] != nil {
 		// TODO: How do we pass the type through?
 		// TODO: use https://pkg.go.dev/sigs.k8s.io/controller-runtime@v0.19.1/pkg/builder#TypedBuilder.WatchesMetadata
-		builder.Watches(
-			&clustersv1.GitopsCluster{},
-			handler.EnqueueRequestsFromMapFunc(r.gitOpsClusterToGitOpsSet),
+		builder.WatchesMetadata(
+			partialObjectMetadataFor(templatesv1.GitopsClusterGVK),
+			handler.EnqueueRequestsFromMapFunc(r.clusterToGitOpsSet),
 		)
 	}
 
@@ -413,16 +414,15 @@ func (r *GitOpsSetReconciler) SetupWithManager(mgr ctrl.Manager) error {
 	return builder.Complete(r)
 }
 
-// gitOpsClusterToGitOpsSet maps a GitopsCluster object to its related GitOpsSet objects
+// clusterToGitOpsSet maps a GitopsCluster object to its related GitOpsSet objects
 // and returns a list of reconcile requests for the GitOpsSets.
-func (r *GitOpsSetReconciler) gitOpsClusterToGitOpsSet(ctx context.Context, o client.Object) []reconcile.Request {
-	gitOpsCluster, ok := o.(*clustersv1.GitopsCluster)
+func (r *GitOpsSetReconciler) clusterToGitOpsSet(ctx context.Context, o client.Object) []reconcile.Request {
+	cluster, ok := o.(*metav1.PartialObjectMetadata)
 	if !ok {
 		return nil
 	}
 
 	list := &templatesv1.GitOpsSetList{}
-
 	err := r.List(ctx, list, &client.ListOptions{})
 	if err != nil {
 		return nil
@@ -430,7 +430,8 @@ func (r *GitOpsSetReconciler) gitOpsClusterToGitOpsSet(ctx context.Context, o cl
 
 	var result []reconcile.Request
 	for _, v := range list.Items {
-		if matchCluster(gitOpsCluster, &v) {
+		syslog.Printf("KEVIN!!!!! matching against cluster %#v vs %#v", cluster, v)
+		if matchCluster(cluster, &v) {
 			result = append(result, reconcile.Request{NamespacedName: client.ObjectKeyFromObject(&v)})
 		}
 	}
@@ -459,10 +460,10 @@ func (r *GitOpsSetReconciler) finalize(ctx context.Context, gs *templatesv1.GitO
 	return ctrl.Result{}, r.Update(ctx, gs)
 }
 
-func matchCluster(gitOpsCluster *clustersv1.GitopsCluster, gitOpsSet *templatesv1.GitOpsSet) bool {
+func matchCluster(cluster *metav1.PartialObjectMetadata, gitOpsSet *templatesv1.GitOpsSet) bool {
 	for _, generator := range gitOpsSet.Spec.Generators {
 		for _, selector := range getClusterSelectors(generator) {
-			if selectorMatchesCluster(selector, gitOpsCluster) {
+			if selectorMatchesCluster(selector, cluster) {
 				return true
 			}
 		}
@@ -489,7 +490,7 @@ func getClusterSelectors(generator templatesv1.GitOpsSetGenerator) []metav1.Labe
 	return selectors
 }
 
-func selectorMatchesCluster(labelSelector metav1.LabelSelector, cluster *clustersv1.GitopsCluster) bool {
+func selectorMatchesCluster(labelSelector metav1.LabelSelector, cluster *metav1.PartialObjectMetadata) bool {
 	selector, err := metav1.LabelSelectorAsSelector(&labelSelector)
 	if err != nil {
 		return false
@@ -763,4 +764,11 @@ func calculateInterval(gs *templatesv1.GitOpsSet, configuredGenerators map[strin
 	sort.Slice(res, func(i, j int) bool { return res[i] < res[j] })
 
 	return res[0], nil
+}
+
+func partialObjectMetadataFor(gvk schema.GroupVersionKind) *metav1.PartialObjectMetadata {
+	partialMeta := &metav1.PartialObjectMetadata{}
+	partialMeta.SetGroupVersionKind(gvk)
+
+	return partialMeta
 }

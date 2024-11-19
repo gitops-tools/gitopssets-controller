@@ -2,6 +2,7 @@ package v1alpha1
 
 import (
 	"github.com/fluxcd/pkg/apis/meta"
+	clustersv1 "github.com/weaveworks/cluster-controller/api/v1alpha1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	runtime "k8s.io/apimachinery/pkg/runtime"
@@ -10,6 +11,13 @@ import (
 // GitOpsSetFinalizer is the finalizer added to GitOpsSets to allow us to clean
 // up resources.
 const GitOpsSetFinalizer = "finalizers.sets.gitops.pro"
+
+var (
+	// GitopsClusterGVK is the GVK for Weaveworks Gitops Clusters.
+	GitopsClusterGVK = clustersv1.GroupVersion.WithKind("GitopsCluster")
+	// GitopsClusterListGVK is the GVK for Weaveworks Gitops Clusters.
+	GitopsClusterListGVK = clustersv1.GroupVersion.WithKind("GitopsClusterList")
+)
 
 // LocalObjectReference contains enough information to locate the referenced Kubernetes resource object.
 type LocalObjectReference struct {

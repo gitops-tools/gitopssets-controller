@@ -1081,13 +1081,13 @@ func nsn(namespace, name string) types.NamespacedName {
 	}
 }
 
-func makeTestGitRepository(t *testing.T, archiveURL string) *sourcev1beta2.GitRepository {
-	gr := &sourcev1beta2.GitRepository{
+func makeTestGitRepository(t *testing.T, archiveURL string) *sourcev1.GitRepository {
+	gr := &sourcev1.GitRepository{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "my-git-repo",
 			Namespace: "default",
 		},
-		Spec: sourcev1beta2.GitRepositorySpec{
+		Spec: sourcev1.GitRepositorySpec{
 			URL: archiveURL,
 		},
 	}

@@ -2,7 +2,6 @@ package tests
 
 import (
 	"fmt"
-	"net/http"
 	"os"
 	"path/filepath"
 	"testing"
@@ -17,8 +16,12 @@ import (
 	sourcev1beta2 "github.com/fluxcd/source-controller/api/v1beta2"
 	"github.com/gitops-tools/gitopssets-controller/test"
 	clustersv1 "github.com/weaveworks/cluster-controller/api/v1alpha1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
+	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/client-go/rest"
 	ctrl "sigs.k8s.io/controller-runtime"
 	"sigs.k8s.io/controller-runtime/pkg/client/apiutil"
 
@@ -33,7 +36,6 @@ import (
 	"github.com/gitops-tools/gitopssets-controller/pkg/generators/matrix"
 	"github.com/gitops-tools/gitopssets-controller/pkg/generators/ocirepository"
 	"github.com/gitops-tools/gitopssets-controller/pkg/generators/pullrequests"
-	// +kubebuilder:scaffold:imports
 )
 
 const (
@@ -47,21 +49,32 @@ var (
 )
 
 func TestMain(m *testing.M) {
-	utilruntime.Must(gitopssetsv1.AddToScheme(scheme.Scheme))
-	utilruntime.Must(clustersv1.AddToScheme(scheme.Scheme))
-	utilruntime.Must(sourcev1.AddToScheme(scheme.Scheme))
-	utilruntime.Must(sourcev1beta2.AddToScheme(scheme.Scheme))
-	utilruntime.Must(imagev1.AddToScheme(scheme.Scheme))
-	utilruntime.Must(kustomizev1.AddToScheme(scheme.Scheme))
+	builder := runtime.NewSchemeBuilder(
+		gitopssetsv1.AddToScheme,
+		clustersv1.AddToScheme,
+		sourcev1.AddToScheme,
+		sourcev1beta2.AddToScheme,
+		imagev1.AddToScheme,
+		kustomizev1.AddToScheme,
+		metav1.AddMetaToScheme,
+		clientgoscheme.AddToScheme,
+	)
+	utilruntime.Must(builder.AddToScheme(scheme.Scheme))
+
 	fetcher := fetch.NewArchiveFetcher(1, tar.UnlimitedUntarSize, tar.UnlimitedUntarSize, "")
 
 	testEnv = testenv.New(testenv.WithCRDPath(filepath.Join("..", "..", "config", "crd", "bases"),
 		filepath.Join("..", "..", "controllers", "testdata", "crds"),
 		filepath.Join("testdata", "crds"),
 	))
-	mapper, err := apiutil.NewDynamicRESTMapper(testEnv.GetConfig(), http.DefaultClient)
+
+	httpClient, err := rest.HTTPClientFor(testEnv.GetConfig())
 	if err != nil {
-		panic(fmt.Sprintf("failed to create RESTMapper:  %v", err))
+		panic(fmt.Sprintf("failed to get an HTTP client for the server: %s", err))
+	}
+	mapper, err := apiutil.NewDynamicRESTMapper(testEnv.GetConfig(), httpClient)
+	if err != nil {
+		panic(fmt.Sprintf("failed to create RESTMapper: %s", err))
 	}
 
 	eventRecorder = &test.FakeEventRecorder{}
@@ -82,7 +95,7 @@ func TestMain(m *testing.M) {
 			}),
 			"PullRequests":  pullrequests.GeneratorFactory,
 			"OCIRepository": ocirepository.GeneratorFactory(fetcher),
-			"Cluster":       cluster.GeneratorFactory,
+			"Cluster":       cluster.GeneratorFactory(gitopssetsv1.GitopsClusterListGVK),
 			"ImagePolicy":   imagepolicy.GeneratorFactory,
 			"Config":        config.GeneratorFactory,
 		},

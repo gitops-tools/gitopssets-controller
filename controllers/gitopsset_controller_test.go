@@ -36,7 +36,6 @@ import (
 	"github.com/gitops-tools/gitopssets-controller/pkg/generators/gitrepository"
 	"github.com/gitops-tools/gitopssets-controller/pkg/generators/list"
 	"github.com/gitops-tools/gitopssets-controller/test"
-	clustersv1 "github.com/weaveworks/cluster-controller/api/v1alpha1"
 )
 
 var kustomizationGVK = schema.GroupVersionKind{
@@ -889,7 +888,7 @@ func TestGetClusterSelectors(t *testing.T) {
 }
 
 func TestMatchCluster(t *testing.T) {
-	gitopsCluster := &clustersv1.GitopsCluster{
+	cluster := &metav1.PartialObjectMetadata{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels: map[string]string{
 				"app": "myapp",
@@ -908,13 +907,13 @@ func TestMatchCluster(t *testing.T) {
 
 	testCases := []struct {
 		name      string
-		cluster   *clustersv1.GitopsCluster
+		cluster   *metav1.PartialObjectMetadata
 		gitopsSet *templatesv1.GitOpsSet
 		want      bool
 	}{
 		{
 			name:    "matching cluster",
-			cluster: gitopsCluster,
+			cluster: cluster,
 			gitopsSet: &templatesv1.GitOpsSet{
 				Spec: templatesv1.GitOpsSetSpec{
 					Generators: []templatesv1.GitOpsSetGenerator{
@@ -928,7 +927,7 @@ func TestMatchCluster(t *testing.T) {
 		},
 		{
 			name:    "non-matching cluster",
-			cluster: gitopsCluster,
+			cluster: cluster,
 			gitopsSet: &templatesv1.GitOpsSet{
 				Spec: templatesv1.GitOpsSetSpec{
 					Generators: []templatesv1.GitOpsSetGenerator{
@@ -949,7 +948,7 @@ func TestMatchCluster(t *testing.T) {
 		},
 		{
 			name:    "matching cluster in matrix generator",
-			cluster: gitopsCluster,
+			cluster: cluster,
 			gitopsSet: &templatesv1.GitOpsSet{
 				Spec: templatesv1.GitOpsSetSpec{
 					Generators: []templatesv1.GitOpsSetGenerator{
@@ -969,7 +968,7 @@ func TestMatchCluster(t *testing.T) {
 		},
 		{
 			name:    "list generator should not match",
-			cluster: gitopsCluster,
+			cluster: cluster,
 			gitopsSet: &templatesv1.GitOpsSet{
 				Spec: templatesv1.GitOpsSetSpec{
 					Generators: []templatesv1.GitOpsSetGenerator{
@@ -996,13 +995,13 @@ func TestMatchCluster(t *testing.T) {
 func TestSelectorMatchesCluster(t *testing.T) {
 	testCases := []struct {
 		name          string
-		cluster       *clustersv1.GitopsCluster
+		cluster       *metav1.PartialObjectMetadata
 		labelSelector metav1.LabelSelector
 		want          bool
 	}{
 		{
 			name: "matching selector",
-			cluster: &clustersv1.GitopsCluster{
+			cluster: &metav1.PartialObjectMetadata{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
 						"app": "myapp",
@@ -1019,7 +1018,7 @@ func TestSelectorMatchesCluster(t *testing.T) {
 		},
 		{
 			name: "non-matching selector",
-			cluster: &clustersv1.GitopsCluster{
+			cluster: &metav1.PartialObjectMetadata{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
 						"app": "myapp",
@@ -1036,7 +1035,7 @@ func TestSelectorMatchesCluster(t *testing.T) {
 		},
 		{
 			name: "empty selector",
-			cluster: &clustersv1.GitopsCluster{
+			cluster: &metav1.PartialObjectMetadata{
 				ObjectMeta: metav1.ObjectMeta{
 					Labels: map[string]string{
 						"app": "myapp",
