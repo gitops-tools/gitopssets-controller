@@ -1,18 +1,17 @@
 module github.com/gitops-tools/gitopssets-controller
 
 go 1.22.4
-
-toolchain go1.22.5
+toolchain go1.22.10
 
 require (
 	dario.cat/mergo v1.0.1
 	github.com/Masterminds/sprig/v3 v3.3.0
-	github.com/cyphar/filepath-securejoin v0.3.4
+	github.com/cyphar/filepath-securejoin v0.3.5
 	github.com/fluxcd/image-reflector-controller/api v0.33.0
 	github.com/fluxcd/kustomize-controller/api v1.4.0
 	github.com/fluxcd/pkg/apis/event v0.10.1
 	github.com/fluxcd/pkg/apis/meta v1.6.1
-	github.com/fluxcd/pkg/http/fetch v0.12.1
+	github.com/fluxcd/pkg/http/fetch v0.13.0
 	github.com/fluxcd/pkg/runtime v0.49.1
 	github.com/fluxcd/pkg/tar v0.8.1
 	github.com/fluxcd/source-controller/api v1.4.1
@@ -118,7 +117,7 @@ require (
 	golang.org/x/net v0.30.0 // indirect
 	golang.org/x/oauth2 v0.22.0 // indirect
 	golang.org/x/sync v0.8.0 // indirect
-	golang.org/x/sys v0.26.0 // indirect
+	golang.org/x/sys v0.28.0 // indirect
 	golang.org/x/term v0.25.0 // indirect
 	golang.org/x/text v0.19.0 // indirect
 	golang.org/x/time v0.6.0 // indirect
