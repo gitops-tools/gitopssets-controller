@@ -1,7 +1,8 @@
 module github.com/gitops-tools/gitopssets-controller
 
-go 1.22.4
-toolchain go1.22.10
+go 1.22.7
+
+toolchain go1.23.4
 
 require (
 	dario.cat/mergo v1.0.1
