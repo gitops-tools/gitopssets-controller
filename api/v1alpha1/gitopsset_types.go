@@ -1,6 +1,9 @@
 package v1alpha1
 
 import (
+	"fmt"
+	"net/url"
+
 	"github.com/fluxcd/pkg/apis/meta"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -36,6 +39,44 @@ type ClusterGenerator struct {
 	// If no selector is provided, no clusters will be matched.
 	// +optional
 	Selector metav1.LabelSelector `json:"selector,omitempty"`
+}
+
+type KeycloakUsersConfig struct {
+	// Enabled is used to filter only users who are enabled.
+	// +optional
+	Enabled bool `json:"enabled"`
+}
+
+func (k KeycloakUsersConfig) ToValues() url.Values {
+	v := url.Values{}
+	v.Set("enabled", fmt.Sprintf("%v", k.Enabled))
+
+	return v
+}
+
+// KeycloakUsersGeneration configures the Keycloak method for querying for
+// users.
+type KeycloakUsersGeneration struct {
+	// This is the API endpoint to use.
+	// +kubebuilder:validation:Pattern="^https://"
+	Endpoint string `json:"endpoint"`
+	// +required
+	SecretRef *LocalObjectReference `json:"secretRef,omitempty"`
+
+	// Control the users that are queried from Keycloak.
+	// +required
+	QueryConfig *KeycloakUsersConfig `json:"queryConfig"`
+}
+
+// UsersGenerator defines a generator that queries for Users from an upstream
+// API.
+type UsersGenerator struct {
+	// The interval at which to poll the API endpoint.
+	// +required
+	Interval metav1.Duration `json:"interval"`
+
+	// +optional
+	Keycloak *KeycloakUsersGeneration `json:"keycloak,omitempty"`
 }
 
 // ConfigGenerator loads a referenced ConfigMap or
@@ -229,6 +270,7 @@ type GitOpsSetNestedGenerator struct {
 	APIClient     *APIClientGenerator     `json:"apiClient,omitempty"`
 	ImagePolicy   *ImagePolicyGenerator   `json:"imagePolicy,omitempty"`
 	Config        *ConfigGenerator        `json:"config,omitempty"`
+	Users         *UsersGenerator         `json:"users,omitempty"`
 }
 
 // ImagePolicyGenerator generates from the ImagePolicy.
@@ -248,6 +290,7 @@ type GitOpsSetGenerator struct {
 	APIClient     *APIClientGenerator     `json:"apiClient,omitempty"`
 	ImagePolicy   *ImagePolicyGenerator   `json:"imagePolicy,omitempty"`
 	Config        *ConfigGenerator        `json:"config,omitempty"`
+	Users         *UsersGenerator         `json:"users,omitempty"`
 }
 
 // GitOpsSetSpec defines the desired state of GitOpsSet

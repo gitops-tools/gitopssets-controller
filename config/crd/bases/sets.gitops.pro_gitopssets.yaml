@@ -596,6 +596,46 @@ spec:
                                 - interval
                                 - repo
                                 type: object
+                              users:
+                                description: |-
+                                  UsersGenerator defines a generator that queries for Users from an upstream
+                                  API.
+                                properties:
+                                  keycloak:
+                                    description: |-
+                                      KeycloakUsersGeneration configures the Keycloak method for querying for
+                                      users.
+                                    properties:
+                                      endpoint:
+                                        description: This is the API endpoint to use.
+                                        pattern: ^https://
+                                        type: string
+                                      queryConfig:
+                                        description: Control the users that are queried
+                                          from Keycloak.
+                                        properties:
+                                          enabled:
+                                            description: Enabled is used to filter
+                                              only users who are enabled.
+                                            type: boolean
+                                        type: object
+                                      secretRef:
+                                        description: LocalObjectReference contains
+                                          enough information to locate the referenced
+                                          Kubernetes resource object.
+                                        properties:
+                                          name:
+                                            description: Name of the referent.
+                                            type: string
+                                        required:
+                                        - name
+                                        type: object
+                                    required:
+                                    - endpoint
+                                    - queryConfig
+                                    - secretRef
+                                    type: object
+                                type: object
                             type: object
                           type: array
                         singleElement:
@@ -701,6 +741,45 @@ spec:
                       - driver
                       - interval
                       - repo
+                      type: object
+                    users:
+                      description: |-
+                        UsersGenerator defines a generator that queries for Users from an upstream
+                        API.
+                      properties:
+                        keycloak:
+                          description: |-
+                            KeycloakUsersGeneration configures the Keycloak method for querying for
+                            users.
+                          properties:
+                            endpoint:
+                              description: This is the API endpoint to use.
+                              pattern: ^https://
+                              type: string
+                            queryConfig:
+                              description: Control the users that are queried from
+                                Keycloak.
+                              properties:
+                                enabled:
+                                  description: Enabled is used to filter only users
+                                    who are enabled.
+                                  type: boolean
+                              type: object
+                            secretRef:
+                              description: LocalObjectReference contains enough information
+                                to locate the referenced Kubernetes resource object.
+                              properties:
+                                name:
+                                  description: Name of the referent.
+                                  type: string
+                              required:
+                              - name
+                              type: object
+                          required:
+                          - endpoint
+                          - queryConfig
+                          - secretRef
+                          type: object
                       type: object
                   type: object
                 type: array
