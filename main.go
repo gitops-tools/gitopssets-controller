@@ -16,7 +16,7 @@ import (
 	"github.com/fluxcd/pkg/runtime/metrics"
 	"github.com/fluxcd/pkg/runtime/pprof"
 	"github.com/fluxcd/pkg/tar"
-	"github.com/gitops-tools/gitopssets-controller/pkg/generators/apiclient"
+	"github.com/gitops-tools/gitopssets-controller/pkg/generators"
 	"github.com/gitops-tools/gitopssets-controller/pkg/setup"
 	flag "github.com/spf13/pflag"
 	corev1 "k8s.io/api/core/v1"
@@ -165,7 +165,7 @@ func main() {
 		Scheme:                mgr.GetScheme(),
 		Mapper:                mapper,
 		// TODO: Figure how to configure the DefaultClient.
-		Generators:    setup.GetGenerators(enabledGenerators, fetcher, apiclient.DefaultClientFactory),
+		Generators:    setup.GetGenerators(enabledGenerators, fetcher, generators.DefaultClientFactory),
 		Metrics:       metricsH,
 		EventRecorder: eventRecorder,
 	}).SetupWithManager(mgr); err != nil {
