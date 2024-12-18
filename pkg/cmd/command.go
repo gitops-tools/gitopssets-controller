@@ -26,7 +26,6 @@ import (
 	templatesv1 "github.com/gitops-tools/gitopssets-controller/api/v1alpha1"
 	"github.com/gitops-tools/gitopssets-controller/controllers/templates"
 	"github.com/gitops-tools/gitopssets-controller/pkg/generators"
-	"github.com/gitops-tools/gitopssets-controller/pkg/generators/apiclient"
 	"github.com/gitops-tools/gitopssets-controller/pkg/parser"
 	"github.com/gitops-tools/gitopssets-controller/pkg/setup"
 )
@@ -194,7 +193,7 @@ func renderGitOpsSet(filename string, enabledGenerators []string, disableCluster
 		fetcher = localFetcher{logger: logger}
 	}
 
-	factories := setup.GetGenerators(enabledGenerators, fetcher, apiclient.DefaultClientFactory)
+	factories := setup.GetGenerators(enabledGenerators, fetcher, generators.DefaultClientFactory)
 	gens := instantiateGenerators(factories, logger, cl)
 
 	var generated []*unstructured.Unstructured

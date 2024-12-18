@@ -596,6 +596,100 @@ spec:
                                 - interval
                                 - repo
                                 type: object
+                              users:
+                                description: |-
+                                  UsersGenerator defines a generator that queries for Users from an upstream
+                                  API.
+                                properties:
+                                  interval:
+                                    description: The interval at which to poll the
+                                      API endpoint.
+                                    type: string
+                                  keycloak:
+                                    description: |-
+                                      KeycloakUsersGeneration configures the Keycloak method for querying for
+                                      users.
+                                    properties:
+                                      endpoint:
+                                        description: This is the API endpoint to use.
+                                        pattern: ^(http|https)://.*$
+                                        type: string
+                                      queryConfig:
+                                        description: Control the users that are queried
+                                          from Keycloak.
+                                        properties:
+                                          allPages:
+                                            default: true
+                                            description: List all users page-by-page
+                                            type: boolean
+                                          email:
+                                            description: |-
+                                              Email filters users containing the string.
+                                              The Exact option modifies the search.
+                                            type: string
+                                          emailVerified:
+                                            description: EmailVerified is used to
+                                              filter users with verified emails.
+                                            type: boolean
+                                          enabled:
+                                            description: Enabled is used to filter
+                                              only users who are enabled.
+                                            type: boolean
+                                          exact:
+                                            description: |-
+                                              Exact controls whether or not the Email, LastName, FirstName and Username
+                                              searches must match exactly.
+                                            type: boolean
+                                          firstName:
+                                            description: |-
+                                              Firstname filters users containing the string.
+                                              The Exact option modifies the search.
+                                            type: string
+                                          lastName:
+                                            description: |-
+                                              Lastname filters users containing the string.
+                                              The Exact option modifies the search.
+                                            type: string
+                                          limit:
+                                            description: Limit the number of results
+                                              in the query.
+                                            type: integer
+                                          query:
+                                            additionalProperties:
+                                              type: string
+                                            description: Query filters users with
+                                              attributes.
+                                            type: object
+                                          search:
+                                            description: |-
+                                              Search filters users with the username, first or last name, or email
+                                              containing the string.
+                                            type: string
+                                          userName:
+                                            description: |-
+                                              Username filters users containing the string.
+                                              The Exact option modifies the search.
+                                            type: string
+                                        type: object
+                                      secretRef:
+                                        description: LocalObjectReference contains
+                                          enough information to locate the referenced
+                                          Kubernetes resource object.
+                                        properties:
+                                          name:
+                                            description: Name of the referent.
+                                            type: string
+                                        required:
+                                        - name
+                                        type: object
+                                    required:
+                                    - endpoint
+                                    - queryConfig
+                                    - secretRef
+                                    type: object
+                                required:
+                                - interval
+                                type: object
                             type: object
                           type: array
                         singleElement:
@@ -701,6 +795,97 @@ spec:
                       - driver
                       - interval
                       - repo
+                      type: object
+                    users:
+                      description: |-
+                        UsersGenerator defines a generator that queries for Users from an upstream
+                        API.
+                      properties:
+                        interval:
+                          description: The interval at which to poll the API endpoint.
+                          type: string
+                        keycloak:
+                          description: |-
+                            KeycloakUsersGeneration configures the Keycloak method for querying for
+                            users.
+                          properties:
+                            endpoint:
+                              description: This is the API endpoint to use.
+                              pattern: ^(http|https)://.*$
+                              type: string
+                            queryConfig:
+                              description: Control the users that are queried from
+                                Keycloak.
+                              properties:
+                                allPages:
+                                  default: true
+                                  description: List all users page-by-page
+                                  type: boolean
+                                email:
+                                  description: |-
+                                    Email filters users containing the string.
+                                    The Exact option modifies the search.
+                                  type: string
+                                emailVerified:
+                                  description: EmailVerified is used to filter users
+                                    with verified emails.
+                                  type: boolean
+                                enabled:
+                                  description: Enabled is used to filter only users
+                                    who are enabled.
+                                  type: boolean
+                                exact:
+                                  description: |-
+                                    Exact controls whether or not the Email, LastName, FirstName and Username
+                                    searches must match exactly.
+                                  type: boolean
+                                firstName:
+                                  description: |-
+                                    Firstname filters users containing the string.
+                                    The Exact option modifies the search.
+                                  type: string
+                                lastName:
+                                  description: |-
+                                    Lastname filters users containing the string.
+                                    The Exact option modifies the search.
+                                  type: string
+                                limit:
+                                  description: Limit the number of results in the
+                                    query.
+                                  type: integer
+                                query:
+                                  additionalProperties:
+                                    type: string
+                                  description: Query filters users with attributes.
+                                  type: object
+                                search:
+                                  description: |-
+                                    Search filters users with the username, first or last name, or email
+                                    containing the string.
+                                  type: string
+                                userName:
+                                  description: |-
+                                    Username filters users containing the string.
+                                    The Exact option modifies the search.
+                                  type: string
+                              type: object
+                            secretRef:
+                              description: LocalObjectReference contains enough information
+                                to locate the referenced Kubernetes resource object.
+                              properties:
+                                name:
+                                  description: Name of the referent.
+                                  type: string
+                              required:
+                              - name
+                              type: object
+                          required:
+                          - endpoint
+                          - queryConfig
+                          - secretRef
+                          type: object
+                      required:
+                      - interval
                       type: object
                   type: object
                 type: array

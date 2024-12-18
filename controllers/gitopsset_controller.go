@@ -364,13 +364,16 @@ func (r *GitOpsSetReconciler) SetupWithManager(mgr ctrl.Manager) error {
 		For(&templatesv1.GitOpsSet{}, builder.WithPredicates(
 			predicate.Or(predicate.GenerationChangedPredicate{}, predicates.ReconcileRequestedPredicate{}))).
 		Watches(
-			&sourcev1.GitRepository{},
-			handler.EnqueueRequestsFromMapFunc(r.gitRepositoryToGitOpsSet),
-		).
-		Watches(
 			&corev1.Secret{},
 			handler.EnqueueRequestsFromMapFunc(r.secretToGitOpsSet),
 		)
+
+	if r.Generators["GitRepository"] != nil {
+		builder.Watches(
+			&sourcev1.GitRepository{},
+			handler.EnqueueRequestsFromMapFunc(r.gitRepositoryToGitOpsSet),
+		)
+	}
 
 	if r.Generators["Config"] != nil {
 		builder.Watches(

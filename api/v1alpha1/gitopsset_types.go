@@ -229,6 +229,7 @@ type GitOpsSetNestedGenerator struct {
 	APIClient     *APIClientGenerator     `json:"apiClient,omitempty"`
 	ImagePolicy   *ImagePolicyGenerator   `json:"imagePolicy,omitempty"`
 	Config        *ConfigGenerator        `json:"config,omitempty"`
+	Users         *UsersGenerator         `json:"users,omitempty"`
 }
 
 // ImagePolicyGenerator generates from the ImagePolicy.
@@ -248,6 +249,7 @@ type GitOpsSetGenerator struct {
 	APIClient     *APIClientGenerator     `json:"apiClient,omitempty"`
 	ImagePolicy   *ImagePolicyGenerator   `json:"imagePolicy,omitempty"`
 	Config        *ConfigGenerator        `json:"config,omitempty"`
+	Users         *UsersGenerator         `json:"users,omitempty"`
 }
 
 // GitOpsSetSpec defines the desired state of GitOpsSet

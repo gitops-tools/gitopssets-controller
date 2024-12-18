@@ -3,8 +3,6 @@ package main
 import (
 	"os"
 
-	// Import all Kubernetes client auth plugins (e.g. Azure, GCP, OIDC, etc.)
-	// to ensure that exec-entrypoint and run can make use of them.
 	_ "k8s.io/client-go/plugin/pkg/client/auth"
 	"k8s.io/client-go/rest"
 
@@ -15,8 +13,6 @@ import (
 	"github.com/fluxcd/pkg/runtime/logger"
 	"github.com/fluxcd/pkg/runtime/metrics"
 	"github.com/fluxcd/pkg/runtime/pprof"
-	"github.com/gitops-tools/gitopssets-controller/pkg/generators/apiclient"
-	"github.com/gitops-tools/gitopssets-controller/pkg/setup"
 	flag "github.com/spf13/pflag"
 	corev1 "k8s.io/api/core/v1"
 	ctrl "sigs.k8s.io/controller-runtime"
@@ -28,6 +24,8 @@ import (
 
 	templatesv1 "github.com/gitops-tools/gitopssets-controller/api/v1alpha1"
 	"github.com/gitops-tools/gitopssets-controller/controllers"
+	"github.com/gitops-tools/gitopssets-controller/pkg/generators"
+	"github.com/gitops-tools/gitopssets-controller/pkg/setup"
 )
 
 var (
@@ -173,7 +171,7 @@ func main() {
 		Scheme:                mgr.GetScheme(),
 		Mapper:                mapper,
 		// TODO: Figure how to configure the DefaultClient.
-		Generators:    setup.GetGenerators(enabledGenerators, fetcher, apiclient.DefaultClientFactory),
+		Generators:    setup.GetGenerators(enabledGenerators, fetcher, generators.DefaultClientFactory),
 		Metrics:       metricsH,
 		EventRecorder: eventRecorder,
 	}).SetupWithManager(mgr); err != nil {
