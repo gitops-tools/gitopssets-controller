@@ -19,22 +19,9 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// This is used to create per API request http.Clients.
-type HTTPClientFactory func(*tls.Config) *http.Client
-
-// This is the default Client factory it returns a zero-value client.
-var DefaultClientFactory = func(config *tls.Config) *http.Client {
-	transport := http.DefaultTransport.(*http.Transport).Clone()
-	transport.TLSClientConfig = config
-
-	return &http.Client{
-		Transport: transport,
-	}
-}
-
 // GeneratorFactory is a function for creating per-reconciliation generators for
 // the APIClientGenerator.
-func GeneratorFactory(factory HTTPClientFactory) generators.GeneratorFactory {
+func GeneratorFactory(factory generators.HTTPClientFactory) generators.GeneratorFactory {
 	return func(l logr.Logger, c client.Reader) generators.Generator {
 		return NewGenerator(l, c, factory)
 	}
@@ -42,13 +29,13 @@ func GeneratorFactory(factory HTTPClientFactory) generators.GeneratorFactory {
 
 // APIClientGenerator generates from an API endpoint.
 type APIClientGenerator struct {
-	ClientFactory HTTPClientFactory
+	ClientFactory generators.HTTPClientFactory
 	Client        client.Reader
 	logr.Logger
 }
 
 // NewGenerator creates and returns a new API client generator.
-func NewGenerator(l logr.Logger, c client.Reader, clientFactory HTTPClientFactory) *APIClientGenerator {
+func NewGenerator(l logr.Logger, c client.Reader, clientFactory generators.HTTPClientFactory) *APIClientGenerator {
 	return &APIClientGenerator{
 		Client:        c,
 		Logger:        l,
