@@ -30,7 +30,7 @@ import (
 var _ generators.Generator = (*APIClientGenerator)(nil)
 
 func TestGenerate_with_no_generator(t *testing.T) {
-	gen := GeneratorFactory(DefaultClientFactory)(logr.Discard(), nil)
+	gen := GeneratorFactory(generators.DefaultClientFactory)(logr.Discard(), nil)
 	_, err := gen.Generate(context.TODO(), nil, nil)
 
 	if err != generators.ErrEmptyGitOpsSet {
@@ -39,7 +39,7 @@ func TestGenerate_with_no_generator(t *testing.T) {
 }
 
 func TestGenerate_with_no_config(t *testing.T) {
-	gen := GeneratorFactory(DefaultClientFactory)(logr.Discard(), nil)
+	gen := GeneratorFactory(generators.DefaultClientFactory)(logr.Discard(), nil)
 	got, err := gen.Generate(context.TODO(), &templatesv1.GitOpsSetGenerator{}, nil)
 
 	if err != nil {
@@ -65,7 +65,7 @@ func TestGenerate(t *testing.T) {
 	testCases := []struct {
 		name          string
 		apiClient     *templatesv1.APIClientGenerator
-		clientFactory HTTPClientFactory
+		clientFactory generators.HTTPClientFactory
 		objs          []runtime.Object
 		want          []map[string]any
 	}{
@@ -372,7 +372,7 @@ func TestGenerate_errors(t *testing.T) {
 
 func TestAPIClientGenerator_GetInterval(t *testing.T) {
 	interval := time.Minute * 10
-	gen := NewGenerator(logr.Discard(), fake.NewFakeClient(), DefaultClientFactory)
+	gen := NewGenerator(logr.Discard(), fake.NewFakeClient(), generators.DefaultClientFactory)
 	sg := &templatesv1.GitOpsSetGenerator{
 		APIClient: &templatesv1.APIClientGenerator{
 			Endpoint: "https://example.com/testing",
