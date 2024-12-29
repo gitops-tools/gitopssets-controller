@@ -6,9 +6,11 @@ import (
 
 	"github.com/bigkevmcd/testcontainer-modules/keycloak"
 	templatesv1 "github.com/gitops-tools/gitopssets-controller/api/v1alpha1"
+	"github.com/gitops-tools/gitopssets-controller/pkg/generators"
 	"github.com/gitops-tools/gitopssets-controller/test"
 	"github.com/go-logr/logr"
 	"github.com/google/go-cmp/cmp"
+	"github.com/google/go-cmp/cmp/cmpopts"
 	"github.com/testcontainers/testcontainers-go"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -18,7 +20,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 )
 
-func TestGenerate(t *testing.T) {
+func TestKeycloakUsersGeneration(t *testing.T) {
 	ctx := context.TODO()
 	keycloakContainer, err := keycloak.Run(ctx,
 		"quay.io/keycloak/keycloak:26.0.6-0",
@@ -32,13 +34,15 @@ func TestGenerate(t *testing.T) {
 	if token == "" {
 		t.Fatal("did not get a bearer token for communicating with Keycloak")
 	}
+	test.AssertNoError(t, keycloakContainer.CreateUser(ctx, token, keycloak.CreateUserRequest{Username: "testing1", Enabled: true}))
+	test.AssertNoError(t, keycloakContainer.CreateUser(ctx, token, keycloak.CreateUserRequest{Username: "testing2", Enabled: true}))
 
 	realmEndpoint, err := keycloakContainer.EndpointPath(ctx, "/admin/realms/master")
 	test.AssertNoError(t, err)
 
 	secret := newSecret(map[string]string{"token": token})
 
-	generator := NewKeycloakGenerator(logr.Discard(), newFakeClient(t, secret), DefaultClientFactory)
+	generator := NewKeycloakGenerator(logr.Discard(), newFakeClient(t, secret), generators.DefaultClientFactory)
 	gsg := templatesv1.GitOpsSetGenerator{
 		Users: &templatesv1.UsersGenerator{
 			Keycloak: &templatesv1.KeycloakUsersGeneration{
@@ -72,20 +76,27 @@ func TestGenerate(t *testing.T) {
 		{
 			"emailVerified": false,
 			"firstname":     "",
-			"id":            "746968cd-bf8b-476c-bc27-780478cbdbf6",
 			"lastname":      "",
-			"username":      "admin",
+			"username":      "administrator",
 		},
 		{
-			"emailVerified": true,
-			"firstname":     "Kevin",
-			"id":            "09871cb2-b64b-4cc3-8b7d-577467921139",
-			"lastname":      "McDermott",
-			"username":      "kevin",
+			"emailVerified": false,
+			"firstname":     "",
+			"lastname":      "",
+			"username":      "testing1",
+		},
+		{
+			"emailVerified": false,
+			"firstname":     "",
+			"lastname":      "",
+			"username":      "testing2",
 		},
 	}
-	if diff := cmp.Diff(want, generated); diff != "" {
-		t.Fatalf("failed to generate users:\n %s", diff)
+
+	if diff := cmp.Diff(want, generated, cmpopts.IgnoreMapEntries(func(k string, _ any) bool {
+		return k == "id"
+	})); diff != "" {
+		t.Fatalf("failed to generate users: diff -want +got\n%s", diff)
 	}
 }
 
@@ -99,9 +110,8 @@ func TestGenerate_with_no_config(t *testing.T) {
 
 func newFakeClient(t *testing.T, objs ...runtime.Object) client.WithWatch {
 	scheme := runtime.NewScheme()
-	if err := clientgoscheme.AddToScheme(scheme); err != nil {
-		t.Fatal(err)
-	}
+	test.AssertNoError(t, clientgoscheme.AddToScheme(scheme))
+
 	return fake.NewClientBuilder().
 		WithScheme(scheme).
 		WithRuntimeObjects(objs...).

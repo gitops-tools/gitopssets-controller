@@ -37,7 +37,7 @@ func TestGenerateForKeycloak(t *testing.T) {
 		{
 			name:   "querying users",
 			config: &gitopssetsv1.KeycloakUsersGeneration{},
-			want:   []map[string]any{{"cluster": "cluster", "url": "url"}},
+			want:   nil,
 		},
 	}
 
