@@ -7,8 +7,6 @@ import (
 	"net/http"
 
 	templatesv1 "github.com/gitops-tools/gitopssets-controller/api/v1alpha1"
-	"github.com/gitops-tools/gitopssets-controller/pkg/generators"
-	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -51,44 +49,7 @@ func (u KeycloakUser) ToMap() map[string]any {
 // 	PageSize int  `json:"pageSize"`
 // }
 
-// // KeycloakGenerator generates from a Keycloak service.
-// type KeycloakGeneratorConfig struct {
-// 	// TODO: Easier to make one "realm-terminated" url?
-// 	APIEndpoint string       `json:"apiEndpoint"`
-// 	Realm       string       `json:"realm"`
-// 	Fetch       *FetchConfig `json:"fetchConfig"`
-
-// 	SecretRef corev1.LocalObjectReference `json:"credentials"`
-
-// 	// Users is a set of rules for fetching users.
-// 	Users *KeycloakGeneratorUsers `json:"users,omitempty"`
-// }
-
-// Keycloak generator generates from a Keycloak API.
-type KeycloakGenerator struct {
-	ClientFactory generators.HTTPClientFactory
-	Client        client.Reader
-	logr.Logger
-}
-
-// // GeneratorFactory is a function for creating per-reconciliation generators for
-// // the KeycloakGenerator.
-// func GeneratorFactory(factory HTTPClientFactory) generators.GeneratorFactory {
-// 	return func(l logr.Logger, c client.Reader) generators.Generator {
-// 		return NewGenerator(l, c, factory)
-// 	}
-// }
-
-// NewGenerator creates and returns a new Keycloak generator.
-func NewKeycloakGenerator(l logr.Logger, c client.Reader, clientFactory generators.HTTPClientFactory) *KeycloakGenerator {
-	return &KeycloakGenerator{
-		Client:        c,
-		Logger:        l,
-		ClientFactory: clientFactory,
-	}
-}
-
-func (k *KeycloakGenerator) Generate(ctx context.Context, sg *templatesv1.GitOpsSetGenerator, ks *templatesv1.GitOpsSet) ([]map[string]any, error) {
+func (k *UsersGenerator) generateKeycloakUsers(ctx context.Context, sg *templatesv1.GitOpsSetGenerator, ks *templatesv1.GitOpsSet) ([]map[string]any, error) {
 	// TODO: Standard validation checks
 
 	secretName := types.NamespacedName{
