@@ -34,7 +34,7 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 	if token == "" {
 		t.Fatal("did not get a bearer token for communicating with Keycloak")
 	}
-	test.AssertNoError(t, keycloakContainer.CreateUser(ctx, token, keycloak.CreateUserRequest{Username: "testing1", Enabled: true}))
+	test.AssertNoError(t, keycloakContainer.CreateUser(ctx, token, keycloak.CreateUserRequest{Username: "testing1", Enabled: false}))
 	test.AssertNoError(t, keycloakContainer.CreateUser(ctx, token, keycloak.CreateUserRequest{Username: "testing2", Enabled: true}))
 
 	realmEndpoint, err := keycloakContainer.EndpointPath(ctx, "/admin/realms/master")
@@ -42,62 +42,59 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 
 	secret := newSecret(map[string]string{"token": token})
 
-	generator := NewKeycloakGenerator(logr.Discard(), newFakeClient(t, secret), generators.DefaultClientFactory)
-	gsg := templatesv1.GitOpsSetGenerator{
-		Users: &templatesv1.UsersGenerator{
-			Keycloak: &templatesv1.KeycloakUsersGeneration{
-				Endpoint: realmEndpoint,
-				SecretRef: &templatesv1.LocalObjectReference{
-					Name: secret.Name,
-				},
-				QueryConfig: &templatesv1.KeycloakUsersConfig{
-					Enabled: true,
-				},
-			},
-		},
-	}
-
-	generated, err := generator.Generate(context.TODO(), &gsg,
-		&templatesv1.GitOpsSet{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      "demo-set",
-				Namespace: "default",
-			},
-			Spec: templatesv1.GitOpsSetSpec{
-				Generators: []templatesv1.GitOpsSetGenerator{
-					gsg,
+	t.Run("querying enabled users", func(t *testing.T) {
+		generator := NewKeycloakGenerator(logr.Discard(), newFakeClient(t, secret), generators.DefaultClientFactory)
+		gsg := templatesv1.GitOpsSetGenerator{
+			Users: &templatesv1.UsersGenerator{
+				Keycloak: &templatesv1.KeycloakUsersGeneration{
+					Endpoint: realmEndpoint,
+					SecretRef: &templatesv1.LocalObjectReference{
+						Name: secret.Name,
+					},
+					QueryConfig: &templatesv1.KeycloakUsersConfig{
+						Enabled: true,
+					},
 				},
 			},
-		})
+		}
 
-	test.AssertNoError(t, err)
+		generated, err := generator.Generate(context.TODO(), &gsg,
+			&templatesv1.GitOpsSet{
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      "demo-set",
+					Namespace: "default",
+				},
+				Spec: templatesv1.GitOpsSetSpec{
+					Generators: []templatesv1.GitOpsSetGenerator{
+						gsg,
+					},
+				},
+			})
+		test.AssertNoError(t, err)
 
-	want := []map[string]any{
-		{
-			"emailVerified": false,
-			"firstname":     "",
-			"lastname":      "",
-			"username":      "administrator",
-		},
-		{
-			"emailVerified": false,
-			"firstname":     "",
-			"lastname":      "",
-			"username":      "testing1",
-		},
-		{
-			"emailVerified": false,
-			"firstname":     "",
-			"lastname":      "",
-			"username":      "testing2",
-		},
-	}
+		want := []map[string]any{
+			{
+				"emailVerified": false,
+				"firstname":     "",
+				"lastname":      "",
+				"username":      "administrator",
+			},
+			{
+				"emailVerified": false,
+				"firstname":     "",
+				"lastname":      "",
+				"username":      "testing2",
+			},
+		}
 
-	if diff := cmp.Diff(want, generated, cmpopts.IgnoreMapEntries(func(k string, _ any) bool {
-		return k == "id"
-	})); diff != "" {
-		t.Fatalf("failed to generate users: diff -want +got\n%s", diff)
-	}
+		if diff := cmp.Diff(want, generated, cmpopts.IgnoreMapEntries(func(k string, _ any) bool {
+			// We can't know the unique ID that's generated in advance so ignore it
+			// for the purposes of comparison.
+			return k == "id"
+		})); diff != "" {
+			t.Fatalf("failed to generate users: diff -want +got\n%s", diff)
+		}
+	})
 }
 
 func TestGenerate_with_no_generator(t *testing.T) {
