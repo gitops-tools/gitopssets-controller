@@ -7,7 +7,7 @@ toolchain go1.23.4
 require (
 	dario.cat/mergo v1.0.1
 	github.com/Masterminds/sprig/v3 v3.3.0
-	github.com/bigkevmcd/testcontainer-modules/keycloak v0.0.0-20241228155905-60d7ae7b6282
+	github.com/bigkevmcd/testcontainer-modules/keycloak v0.0.0-20241229110459-116f28579c5d
 	github.com/cyphar/filepath-securejoin v0.4.1
 	github.com/fluxcd/image-reflector-controller/api v0.34.0
 	github.com/fluxcd/kustomize-controller/api v1.4.0
