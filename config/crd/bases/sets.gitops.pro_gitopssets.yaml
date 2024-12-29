@@ -601,6 +601,10 @@ spec:
                                   UsersGenerator defines a generator that queries for Users from an upstream
                                   API.
                                 properties:
+                                  interval:
+                                    description: The interval at which to poll the
+                                      API endpoint.
+                                    type: string
                                   keycloak:
                                     description: |-
                                       KeycloakUsersGeneration configures the Keycloak method for querying for
@@ -615,6 +619,7 @@ spec:
                                           from Keycloak.
                                         properties:
                                           enabled:
+                                            default: true
                                             description: Enabled is used to filter
                                               only users who are enabled.
                                             type: boolean
@@ -635,6 +640,8 @@ spec:
                                     - queryConfig
                                     - secretRef
                                     type: object
+                                required:
+                                - interval
                                 type: object
                             type: object
                           type: array
@@ -747,6 +754,9 @@ spec:
                         UsersGenerator defines a generator that queries for Users from an upstream
                         API.
                       properties:
+                        interval:
+                          description: The interval at which to poll the API endpoint.
+                          type: string
                         keycloak:
                           description: |-
                             KeycloakUsersGeneration configures the Keycloak method for querying for
@@ -761,6 +771,7 @@ spec:
                                 Keycloak.
                               properties:
                                 enabled:
+                                  default: true
                                   description: Enabled is used to filter only users
                                     who are enabled.
                                   type: boolean
@@ -780,6 +791,8 @@ spec:
                           - queryConfig
                           - secretRef
                           type: object
+                      required:
+                      - interval
                       type: object
                   type: object
                 type: array
