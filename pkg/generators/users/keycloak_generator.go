@@ -2,7 +2,6 @@ package users
 
 import (
 	"context"
-	"crypto/tls"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -24,6 +23,7 @@ type KeycloakUser struct {
 	Firstname     string `json:"firstName"`
 	Lastname      string `json:"lastName"`
 	EmailVerified bool   `json:"emailVerified"`
+	Enabled       bool   `json:"enabled"`
 
 	// This is a unix-timestamp - fix this!
 	CreatedTimestamp int64 `json:"createdTimestamp"`
@@ -41,17 +41,6 @@ func (u KeycloakUser) ToMap() map[string]any {
 		"emailVerified": u.EmailVerified,
 
 		// TODO: CreatedTimestamp in a user-readable format.
-	}
-}
-
-// This is the default Client factory it returns a client configured with the
-// tls.Config.
-var DefaultClientFactory = func(config *tls.Config) *http.Client {
-	transport := http.DefaultTransport.(*http.Transport).Clone()
-	transport.TLSClientConfig = config
-
-	return &http.Client{
-		Transport: transport,
 	}
 }
 
