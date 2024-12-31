@@ -12,15 +12,43 @@ import (
 type KeycloakUsersConfig struct {
 	// Enabled is used to filter only users who are enabled.
 	// +optional
+	Enabled *bool `json:"enabled"`
+
+	// Limit the number of results in the query.
+	// +optional
+	Limit *int `json:"limit"`
+
+	// TODO: Change to a number of pages to query for with 0 being unlimited.
+	// List all users page-by-page
 	// +kubebuilder:default=true
-	Enabled bool `json:"enabled"`
+	// +optional
+	AllPages bool `json:"allPages"`
+
+	// EmailVerified is used to filter users with verified emails.
+	// +optional
+	EmailVerified *bool `json:"emailVerified"`
 }
 
 // ToValues() converts the config to URL Values for communicating with the
 // Keycloak HTTP API.
 func (k KeycloakUsersConfig) ToValues() url.Values {
 	v := url.Values{}
-	v.Set("enabled", fmt.Sprintf("%v", k.Enabled))
+	// TODO: Tests!
+
+	if k.Enabled != nil {
+		v.Set("enabled", fmt.Sprintf("%v", *k.Enabled))
+	}
+
+	if k.EmailVerified != nil {
+		v.Set("emailVerified", fmt.Sprintf("%v", *k.EmailVerified))
+	}
+
+	// The API defaults to 100 users.
+	if k.Limit != nil {
+		if *k.Limit > 0 && *k.Limit != 100 {
+			v.Set("max", fmt.Sprintf("%v", *k.Limit))
+		}
+	}
 
 	return v
 }
