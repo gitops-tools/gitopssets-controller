@@ -15,6 +15,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	clientgoscheme "k8s.io/client-go/kubernetes/scheme"
+	"k8s.io/utils/ptr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 
@@ -35,8 +36,12 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 	if token == "" {
 		t.Fatal("did not get a bearer token for communicating with Keycloak")
 	}
-	test.AssertNoError(t, keycloakContainer.CreateUser(ctx, token, keycloak.CreateUserRequest{Username: "testing1", Enabled: false, Firstname: "Test", Lastname: "User1"}))
-	test.AssertNoError(t, keycloakContainer.CreateUser(ctx, token, keycloak.CreateUserRequest{Username: "testing2", Enabled: true, Firstname: "Test", Lastname: "User2"}))
+	test.AssertNoError(t, keycloakContainer.CreateUser(ctx, token, keycloak.CreateUserRequest{
+		Username: "testing1", Enabled: false, Firstname: "Test", Lastname: "User1",
+		Email: "testing1@example.com", EmailVerified: false}))
+	test.AssertNoError(t, keycloakContainer.CreateUser(ctx, token, keycloak.CreateUserRequest{
+		Username: "testing2", Enabled: true, Firstname: "Test", Lastname: "User2",
+		Email: "testing2@example.com", EmailVerified: true}))
 
 	realmEndpoint, err := keycloakContainer.EndpointPath(ctx, "/admin/realms/master")
 	test.AssertNoError(t, err)
@@ -44,18 +49,38 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 	secret := newSecret(map[string]string{"token": token})
 
 	queryTests := map[string]struct {
-		keycloakUsers *templatesv1.KeycloakUsersGeneration
+		keycloakUsers templatesv1.KeycloakUsersConfig
 		want          []map[string]any
 	}{
+		"querying all users": {
+			keycloakUsers: templatesv1.KeycloakUsersConfig{},
+			want: []map[string]any{
+				{
+					"emailVerified": false,
+					"firstname":     "",
+					"lastname":      "",
+					"username":      "administrator",
+					"enabled":       true,
+				},
+				{
+					"emailVerified": false,
+					"firstname":     "Test",
+					"lastname":      "User1",
+					"username":      "testing1",
+					"enabled":       false,
+				},
+				{
+					"emailVerified": true,
+					"firstname":     "Test",
+					"lastname":      "User2",
+					"username":      "testing2",
+					"enabled":       true,
+				},
+			},
+		},
 		"querying enabled users": {
-			keycloakUsers: &templatesv1.KeycloakUsersGeneration{
-				Endpoint: realmEndpoint,
-				SecretRef: &templatesv1.LocalObjectReference{
-					Name: secret.Name,
-				},
-				QueryConfig: &templatesv1.KeycloakUsersConfig{
-					Enabled: true,
-				},
+			keycloakUsers: templatesv1.KeycloakUsersConfig{
+				Enabled: ptr.To(true),
 			},
 			want: []map[string]any{
 				{
@@ -63,25 +88,59 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 					"firstname":     "",
 					"lastname":      "",
 					"username":      "administrator",
+					"enabled":       true,
 				},
 				{
-					"emailVerified": false,
+					"emailVerified": true,
 					"firstname":     "Test",
 					"lastname":      "User2",
 					"username":      "testing2",
+					"enabled":       true,
 				},
 			},
 		},
+		"limiting enabled users": {
+			keycloakUsers: templatesv1.KeycloakUsersConfig{
+				Enabled: ptr.To(true),
+				Limit:   ptr.To(1),
+			},
+			want: []map[string]any{
+				{
+					"emailVerified": false,
+					"firstname":     "",
+					"lastname":      "",
+					"username":      "administrator",
+					"enabled":       true,
+				},
+			},
+		},
+		"limiting enabled users with all pages": {
+			keycloakUsers: templatesv1.KeycloakUsersConfig{
+				Enabled:  ptr.To(true),
+				AllPages: true,
+				Limit:    ptr.To(1),
+			},
+			want: []map[string]any{
+				{
+					"emailVerified": false,
+					"firstname":     "",
+					"lastname":      "",
+					"username":      "administrator",
+					"enabled":       true,
+				},
+				{
+					"emailVerified": true,
+					"firstname":     "Test",
+					"lastname":      "User2",
+					"username":      "testing2",
+					"enabled":       true,
+				},
+			},
+		},
+
 		"querying not enabled users": {
-			keycloakUsers: &templatesv1.KeycloakUsersGeneration{
-				Endpoint: realmEndpoint,
-				SecretRef: &templatesv1.LocalObjectReference{
-					Name: secret.Name,
-				},
-				QueryConfig: &templatesv1.KeycloakUsersConfig{
-					Enabled: false,
-					// Enabled defaults to true!
-				},
+			keycloakUsers: templatesv1.KeycloakUsersConfig{
+				Enabled: ptr.To(false),
 			},
 			want: []map[string]any{
 				{
@@ -89,6 +148,22 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 					"firstname":     "Test",
 					"lastname":      "User1",
 					"username":      "testing1",
+					"enabled":       false,
+				},
+			},
+		},
+		"querying users with verified users": {
+			keycloakUsers: templatesv1.KeycloakUsersConfig{
+				Enabled:       ptr.To(true),
+				EmailVerified: ptr.To(true),
+			},
+			want: []map[string]any{
+				{
+					"emailVerified": true,
+					"firstname":     "Test",
+					"lastname":      "User2",
+					"username":      "testing2",
+					"enabled":       true,
 				},
 			},
 		},
@@ -100,7 +175,13 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 
 			gsg := templatesv1.GitOpsSetGenerator{
 				Users: &templatesv1.UsersGenerator{
-					Keycloak: tt.keycloakUsers,
+					Keycloak: &templatesv1.KeycloakUsersGeneration{
+						Endpoint: realmEndpoint,
+						SecretRef: &templatesv1.LocalObjectReference{
+							Name: secret.Name,
+						},
+						QueryConfig: &tt.keycloakUsers,
+					},
 				},
 			}
 
