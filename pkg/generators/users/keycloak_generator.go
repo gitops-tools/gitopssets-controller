@@ -1,10 +1,14 @@
 package users
 
 import (
+	"bytes"
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
+	"net/url"
+	"strconv"
 
 	templatesv1 "github.com/gitops-tools/gitopssets-controller/api/v1alpha1"
 	corev1 "k8s.io/api/core/v1"
@@ -12,9 +16,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// This is an interim representation of Keycloak users.
-// TODO: Do we need this?
-// What about additional fields?
+// KeycloakUser represents users in the Keycloak API.
 type KeycloakUser struct {
 	ID            string `json:"id"`
 	Username      string `json:"username"`
@@ -23,7 +25,7 @@ type KeycloakUser struct {
 	EmailVerified bool   `json:"emailVerified"`
 	Enabled       bool   `json:"enabled"`
 
-	// This is a unix-timestamp - fix this!
+	// TODO: This is a unix-timestamp - fix this!
 	CreatedTimestamp int64 `json:"createdTimestamp"`
 }
 
@@ -37,21 +39,14 @@ func (u KeycloakUser) ToMap() map[string]any {
 		"firstname":     u.Firstname,
 		"lastname":      u.Lastname,
 		"emailVerified": u.EmailVerified,
+		"enabled":       u.Enabled,
 
 		// TODO: CreatedTimestamp in a user-readable format.
 	}
 }
 
-// // FetchConfig configures how to load the results from Keycloak.
-// type FetchConfig struct {
-// 	// TODO: Mark this as default to true.
-// 	AllPages bool `json:"allPages"`
-// 	PageSize int  `json:"pageSize"`
-// }
-
+// https://www.keycloak.org/docs-api/latest/rest-api/index.html#_users
 func (k *UsersGenerator) generateKeycloakUsers(ctx context.Context, sg *templatesv1.GitOpsSetGenerator, ks *templatesv1.GitOpsSet) ([]map[string]any, error) {
-	// TODO: Standard validation checks
-
 	secretName := types.NamespacedName{
 		Namespace: ks.GetNamespace(),
 		Name:      sg.Users.Keycloak.SecretRef.Name,
@@ -62,34 +57,68 @@ func (k *UsersGenerator) generateKeycloakUsers(ctx context.Context, sg *template
 		return nil, err
 	}
 
+	query := sg.Users.Keycloak.QueryConfig.ToValues()
+
+	// TODO: This should allow customisation of the TLS setup
+
+	httpClient := k.ClientFactory(nil)
+
+	pageNumber := 0
+	var combinedResult []map[string]any
+	for {
+		if pageNumber > 0 {
+			query["first"] = []string{strconv.Itoa(pageNumber)}
+		}
+
+		result, err := getUsers(httpClient, sg.Users.Keycloak.Endpoint, authToken, query)
+		if err != nil {
+			return nil, err
+		}
+
+		if len(result) == 0 {
+			break
+		}
+
+		combinedResult = append(combinedResult, result...)
+		if !sg.Users.Keycloak.QueryConfig.AllPages {
+			break
+		}
+		pageNumber++
+	}
+
+	return combinedResult, nil
+}
+
+func getUsers(client *http.Client, endpoint, authToken string, query url.Values) ([]map[string]any, error) {
 	// TODO: Improve the URL generation
-	req, err := http.NewRequest(http.MethodGet, sg.Users.Keycloak.Endpoint+"/users?"+sg.Users.Keycloak.QueryConfig.ToValues().Encode(), nil)
+	req, err := http.NewRequest(http.MethodGet, endpoint+"/users?"+query.Encode(), nil)
 	if err != nil {
 		// TODO: Improve error
 		return nil, err
 	}
 	req.Header.Add("Authorization", "Bearer "+authToken)
-	client := k.ClientFactory(nil)
 
 	resp, err := client.Do(req)
 	if err != nil {
-		// TODO: Improve error
-		return nil, err
+		return nil, fmt.Errorf("failed HTTP request to %q: %w", endpoint, err)
 	}
 
-	if resp.StatusCode > 300 {
-		return nil, fmt.Errorf("invalid response from %s: %v", sg.Users.Keycloak.Endpoint, resp.StatusCode)
+	if resp.StatusCode > http.StatusOK {
+		return nil, fmt.Errorf("invalid response from %s: %v", endpoint, resp.StatusCode)
 	}
 
-	// Should we just return the result?
-	decoder := json.NewDecoder(resp.Body)
+	b, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("reading response body: %w", err)
+	}
+
+	decoder := json.NewDecoder(bytes.NewReader(b))
 	// TODO: Wrap this in a function that can report the error.
 	defer resp.Body.Close()
 
 	var users []KeycloakUser
 	if err := decoder.Decode(&users); err != nil {
-		// TODO: Improve error
-		return nil, err
+		return nil, fmt.Errorf("parsing JSON from response: %w", err)
 	}
 
 	var result []map[string]any

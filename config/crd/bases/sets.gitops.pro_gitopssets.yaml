@@ -618,11 +618,18 @@ spec:
                                         description: Control the users that are queried
                                           from Keycloak.
                                         properties:
+                                          emailVerified:
+                                            description: EmailVerified is used to
+                                              filter users with verified emails.
+                                            type: boolean
                                           enabled:
-                                            default: true
                                             description: Enabled is used to filter
                                               only users who are enabled.
                                             type: boolean
+                                          limit:
+                                            description: Limit the number of results
+                                              in the query.
+                                            type: integer
                                         type: object
                                       secretRef:
                                         description: LocalObjectReference contains
@@ -770,11 +777,18 @@ spec:
                               description: Control the users that are queried from
                                 Keycloak.
                               properties:
+                                emailVerified:
+                                  description: EmailVerified is used to filter users
+                                    with verified emails.
+                                  type: boolean
                                 enabled:
-                                  default: true
                                   description: Enabled is used to filter only users
                                     who are enabled.
                                   type: boolean
+                                limit:
+                                  description: Limit the number of results in the
+                                    query.
+                                  type: integer
                               type: object
                             secretRef:
                               description: LocalObjectReference contains enough information
