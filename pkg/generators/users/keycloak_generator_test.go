@@ -36,12 +36,20 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 	if token == "" {
 		t.Fatal("did not get a bearer token for communicating with Keycloak")
 	}
+	test.AssertNoError(t, keycloakContainer.EnableUnmanagedAttributes(ctx, token))
+
 	test.AssertNoError(t, keycloakContainer.CreateUser(ctx, token, keycloak.CreateUserRequest{
 		Username: "testing1", Enabled: false, Firstname: "User1", Lastname: "Tested",
-		Email: "testing1@example.com", EmailVerified: false}))
+		Email: "testing1@example.com", EmailVerified: false,
+		Attributes: map[string][]string{
+			"testing": {"value1"},
+		}}))
 	test.AssertNoError(t, keycloakContainer.CreateUser(ctx, token, keycloak.CreateUserRequest{
 		Username: "testing2", Enabled: true, Firstname: "User2", Lastname: "Testing",
-		Email: "testing2@example.com", EmailVerified: true}))
+		Email: "testing2@example.com", EmailVerified: true,
+		Attributes: map[string][]string{
+			"testing": {"value2"},
+		}}))
 
 	realmEndpoint, err := keycloakContainer.EndpointPath(ctx, "/admin/realms/master")
 	test.AssertNoError(t, err)
@@ -55,6 +63,9 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 		"email":         "",
 		"username":      "administrator",
 		"enabled":       true,
+		"attributes": map[string][]string{
+			"is_temporary_admin": {"true"},
+		},
 	}
 
 	user1 := map[string]any{
@@ -64,6 +75,9 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 		"email":         "testing1@example.com",
 		"username":      "testing1",
 		"enabled":       false,
+		"attributes": map[string][]string{
+			"testing": {"value1"},
+		},
 	}
 
 	user2 := map[string]any{
@@ -73,6 +87,9 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 		"email":         "testing2@example.com",
 		"username":      "testing2",
 		"enabled":       true,
+		"attributes": map[string][]string{
+			"testing": {"value2"},
+		},
 	}
 
 	queryTests := map[string]struct {
@@ -238,6 +255,16 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 			want: []map[string]any{
 				user1,
 				user2,
+			},
+		},
+		"querying users with attributes": {
+			keycloakUsers: templatesv1.KeycloakUsersConfig{
+				Query: map[string]string{
+					"testing": "value1",
+				},
+			},
+			want: []map[string]any{
+				user1,
 			},
 		},
 	}
