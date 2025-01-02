@@ -37,16 +37,43 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 		t.Fatal("did not get a bearer token for communicating with Keycloak")
 	}
 	test.AssertNoError(t, keycloakContainer.CreateUser(ctx, token, keycloak.CreateUserRequest{
-		Username: "testing1", Enabled: false, Firstname: "Test", Lastname: "User1",
+		Username: "testing1", Enabled: false, Firstname: "User1", Lastname: "Tested",
 		Email: "testing1@example.com", EmailVerified: false}))
 	test.AssertNoError(t, keycloakContainer.CreateUser(ctx, token, keycloak.CreateUserRequest{
-		Username: "testing2", Enabled: true, Firstname: "Test", Lastname: "User2",
+		Username: "testing2", Enabled: true, Firstname: "User2", Lastname: "Testing",
 		Email: "testing2@example.com", EmailVerified: true}))
 
 	realmEndpoint, err := keycloakContainer.EndpointPath(ctx, "/admin/realms/master")
 	test.AssertNoError(t, err)
 
 	secret := newSecret(map[string]string{"token": token})
+
+	administrator := map[string]any{
+		"emailVerified": false,
+		"firstname":     "",
+		"lastname":      "",
+		"email":         "",
+		"username":      "administrator",
+		"enabled":       true,
+	}
+
+	user1 := map[string]any{
+		"emailVerified": false,
+		"firstname":     "User1",
+		"lastname":      "Tested",
+		"email":         "testing1@example.com",
+		"username":      "testing1",
+		"enabled":       false,
+	}
+
+	user2 := map[string]any{
+		"emailVerified": true,
+		"firstname":     "User2",
+		"lastname":      "Testing",
+		"email":         "testing2@example.com",
+		"username":      "testing2",
+		"enabled":       true,
+	}
 
 	queryTests := map[string]struct {
 		keycloakUsers templatesv1.KeycloakUsersConfig
@@ -55,27 +82,28 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 		"querying all users": {
 			keycloakUsers: templatesv1.KeycloakUsersConfig{},
 			want: []map[string]any{
-				{
-					"emailVerified": false,
-					"firstname":     "",
-					"lastname":      "",
-					"username":      "administrator",
-					"enabled":       true,
-				},
-				{
-					"emailVerified": false,
-					"firstname":     "Test",
-					"lastname":      "User1",
-					"username":      "testing1",
-					"enabled":       false,
-				},
-				{
-					"emailVerified": true,
-					"firstname":     "Test",
-					"lastname":      "User2",
-					"username":      "testing2",
-					"enabled":       true,
-				},
+				administrator,
+				user1,
+				user2,
+			},
+		},
+		"limiting users": {
+			keycloakUsers: templatesv1.KeycloakUsersConfig{
+				Limit: ptr.To(1),
+			},
+			want: []map[string]any{
+				administrator,
+			},
+		},
+		"limiting all users with all pages - queries all pages": {
+			keycloakUsers: templatesv1.KeycloakUsersConfig{
+				AllPages: true,
+				Limit:    ptr.To(1),
+			},
+			want: []map[string]any{
+				administrator,
+				user1,
+				user2,
 			},
 		},
 		"querying enabled users": {
@@ -83,88 +111,133 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 				Enabled: ptr.To(true),
 			},
 			want: []map[string]any{
-				{
-					"emailVerified": false,
-					"firstname":     "",
-					"lastname":      "",
-					"username":      "administrator",
-					"enabled":       true,
-				},
-				{
-					"emailVerified": true,
-					"firstname":     "Test",
-					"lastname":      "User2",
-					"username":      "testing2",
-					"enabled":       true,
-				},
+				administrator,
+				user2,
 			},
 		},
-		"limiting enabled users": {
-			keycloakUsers: templatesv1.KeycloakUsersConfig{
-				Enabled: ptr.To(true),
-				Limit:   ptr.To(1),
-			},
-			want: []map[string]any{
-				{
-					"emailVerified": false,
-					"firstname":     "",
-					"lastname":      "",
-					"username":      "administrator",
-					"enabled":       true,
-				},
-			},
-		},
-		"limiting enabled users with all pages": {
-			keycloakUsers: templatesv1.KeycloakUsersConfig{
-				Enabled:  ptr.To(true),
-				AllPages: true,
-				Limit:    ptr.To(1),
-			},
-			want: []map[string]any{
-				{
-					"emailVerified": false,
-					"firstname":     "",
-					"lastname":      "",
-					"username":      "administrator",
-					"enabled":       true,
-				},
-				{
-					"emailVerified": true,
-					"firstname":     "Test",
-					"lastname":      "User2",
-					"username":      "testing2",
-					"enabled":       true,
-				},
-			},
-		},
-
 		"querying not enabled users": {
 			keycloakUsers: templatesv1.KeycloakUsersConfig{
 				Enabled: ptr.To(false),
 			},
 			want: []map[string]any{
-				{
-					"emailVerified": false,
-					"firstname":     "Test",
-					"lastname":      "User1",
-					"username":      "testing1",
-					"enabled":       false,
-				},
+				user1,
 			},
 		},
-		"querying users with verified users": {
+		"querying verified users": {
 			keycloakUsers: templatesv1.KeycloakUsersConfig{
-				Enabled:       ptr.To(true),
 				EmailVerified: ptr.To(true),
 			},
 			want: []map[string]any{
-				{
-					"emailVerified": true,
-					"firstname":     "Test",
-					"lastname":      "User2",
-					"username":      "testing2",
-					"enabled":       true,
-				},
+				user2,
+			},
+		},
+		"querying users by email": {
+			keycloakUsers: templatesv1.KeycloakUsersConfig{
+				Email: "example.com",
+			},
+			want: []map[string]any{
+				user1,
+				user2,
+			},
+		},
+		"querying users by email with exact": {
+			keycloakUsers: templatesv1.KeycloakUsersConfig{
+				Email: "example.com",
+				Exact: ptr.To(true),
+			},
+			want: nil,
+		},
+		"querying users by email with matching email": {
+			keycloakUsers: templatesv1.KeycloakUsersConfig{
+				Email: "testing1@example.com",
+				Exact: ptr.To(true),
+			},
+			want: []map[string]any{
+				user1,
+			},
+		},
+		"querying users by first name": {
+			keycloakUsers: templatesv1.KeycloakUsersConfig{
+				Firstname: "User",
+			},
+			want: []map[string]any{
+				user1,
+				user2,
+			},
+		},
+		"querying users by first name with exact": {
+			keycloakUsers: templatesv1.KeycloakUsersConfig{
+				Firstname: "User",
+				Exact:     ptr.To(true),
+			},
+			want: nil,
+		},
+		"querying users by first name with matching name": {
+			keycloakUsers: templatesv1.KeycloakUsersConfig{
+				Firstname: "User1",
+				Exact:     ptr.To(true),
+			},
+			want: []map[string]any{
+				user1,
+			},
+		},
+		"querying users by last name": {
+			keycloakUsers: templatesv1.KeycloakUsersConfig{
+				Lastname: "Test",
+			},
+			want: []map[string]any{
+				user1,
+				user2,
+			},
+		},
+		"querying users by last name with exact": {
+			keycloakUsers: templatesv1.KeycloakUsersConfig{
+				Lastname: "Test",
+				Exact:    ptr.To(true),
+			},
+			want: nil,
+		},
+		"querying users by last name with matching name": {
+			keycloakUsers: templatesv1.KeycloakUsersConfig{
+				Lastname: "Tested",
+				Exact:    ptr.To(true),
+			},
+			want: []map[string]any{
+				user1,
+			},
+		},
+		"querying users by username": {
+			keycloakUsers: templatesv1.KeycloakUsersConfig{
+				Username: "testing",
+			},
+			want: []map[string]any{
+				user1,
+				user2,
+			},
+		},
+		"querying users by username with exact": {
+			keycloakUsers: templatesv1.KeycloakUsersConfig{
+				Username: "testing",
+				Exact:    ptr.To(true),
+			},
+			want: nil,
+		},
+		"querying users by username with matching name": {
+			keycloakUsers: templatesv1.KeycloakUsersConfig{
+				Username: "testing2",
+				Exact:    ptr.To(true),
+			},
+			want: []map[string]any{
+				user2,
+			},
+		},
+		"searching users": {
+			keycloakUsers: templatesv1.KeycloakUsersConfig{
+				Search: "testing",
+			},
+			want: []map[string]any{
+				user1,
+				user2,
 			},
 		},
 	}
