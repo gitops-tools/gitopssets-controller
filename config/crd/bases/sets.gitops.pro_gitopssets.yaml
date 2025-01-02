@@ -654,6 +654,12 @@ spec:
                                             description: Limit the number of results
                                               in the query.
                                             type: integer
+                                          query:
+                                            additionalProperties:
+                                              type: string
+                                            description: Query filters users with
+                                              attributes.
+                                            type: object
                                           search:
                                             description: |-
                                               Search filters users with the username, first or last name, or email
@@ -849,6 +855,11 @@ spec:
                                   description: Limit the number of results in the
                                     query.
                                   type: integer
+                                query:
+                                  additionalProperties:
+                                    type: string
+                                  description: Query filters users with attributes.
+                                  type: object
                                 search:
                                   description: |-
                                     Search filters users with the username, first or last name, or email

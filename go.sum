@@ -22,8 +22,8 @@ github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5 h1:0CwZNZbxp69SHPd
 github.com/armon/go-socks5 v0.0.0-20160902184237-e75332964ef5/go.mod h1:wHh0iHkYZB8zMSxRWpUBQtwG5a7fFgvEO+odwuTv2gs=
 github.com/beorn7/perks v1.0.1 h1:VlbKKnNfV8bJzeqoa4cOKqO6bYr3WgKZxO8Z16+hsOM=
 github.com/beorn7/perks v1.0.1/go.mod h1:G2ZrVWU2WbWT9wwq4/hrbKbnv/1ERSJQ0ibhJ6rlkpw=
-github.com/bigkevmcd/testcontainer-modules/keycloak v0.0.0-20241229110459-116f28579c5d h1:Ow74N4om/BDU9WlVo8ZT7t2K5pQ8uCDpk7NshEFfE2g=
-github.com/bigkevmcd/testcontainer-modules/keycloak v0.0.0-20241229110459-116f28579c5d/go.mod h1:1lSmFk10InLoqls8onoaUYUFkN58N6kuJJ2bxt+PuWU=
+github.com/bigkevmcd/testcontainer-modules/keycloak v0.0.3 h1:5rfj3ufpO3fSAzTeM7ZBRKxB+Id/pzk+Tx0TgFy1TSw=
+github.com/bigkevmcd/testcontainer-modules/keycloak v0.0.3/go.mod h1:1lSmFk10InLoqls8onoaUYUFkN58N6kuJJ2bxt+PuWU=
 github.com/blang/semver/v4 v4.0.0 h1:1PFHFE6yCCTv8C1TeyNNarDzntLi7wMI5i/pzqYIsAM=
 github.com/blang/semver/v4 v4.0.0/go.mod h1:IbckMUScFkM3pff0VJDNKRiT6TG/YpiHIM2yvyW5YoQ=
 github.com/bluekeyes/go-gitdiff v0.8.1 h1:lL1GofKMywO17c0lgQmJYcKek5+s8X6tXVNOLxy4smI=

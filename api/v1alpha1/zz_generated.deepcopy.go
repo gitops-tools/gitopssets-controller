@@ -401,6 +401,13 @@ func (in *KeycloakUsersConfig) DeepCopyInto(out *KeycloakUsersConfig) {
 		*out = new(bool)
 		**out = **in
 	}
+	if in.Query != nil {
+		in, out := &in.Query, &out.Query
+		*out = make(map[string]string, len(*in))
+		for key, val := range *in {
+			(*out)[key] = val
+		}
+	}
 	if in.Exact != nil {
 		in, out := &in.Exact, &out.Exact
 		*out = new(bool)
