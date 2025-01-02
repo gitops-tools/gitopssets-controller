@@ -3,6 +3,7 @@ package v1alpha1
 import (
 	"fmt"
 	"net/url"
+	"strings"
 
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -42,6 +43,10 @@ type KeycloakUsersConfig struct {
 	// containing the string.
 	// +optional
 	Search string `json:"search"`
+
+	// Query filters users with attributes.
+	// +optional
+	Query map[string]string `json:"query,omitempty"`
 
 	// Exact controls whether or not the Email, LastName, FirstName and Username
 	// searches must match exactly.
@@ -94,6 +99,14 @@ func (k KeycloakUsersConfig) ToValues() url.Values {
 
 	if k.Search != "" {
 		v.Set("search", k.Search)
+	}
+
+	if k.Query != nil {
+		var qa []string
+		for k, v := range k.Query {
+			qa = append(qa, fmt.Sprintf("%s:%s", k, v))
+		}
+		v.Set("q", strings.Join(qa, " "))
 	}
 
 	// The API defaults to 100 users.
