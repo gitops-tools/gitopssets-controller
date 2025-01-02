@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -24,12 +25,15 @@ type KeycloakUser struct {
 	Lastname      string `json:"lastName"`
 	EmailVerified bool   `json:"emailVerified"`
 	Enabled       bool   `json:"enabled"`
+	Email         string `json:"email"`
 
 	// TODO: This is a unix-timestamp - fix this!
 	CreatedTimestamp int64 `json:"createdTimestamp"`
 }
 
 func (u KeycloakUser) ToMap() map[string]any {
+	log.Printf("KEVIN!!!!! createdAt = %v", u.CreatedTimestamp)
+
 	// Upper or Lower case for Keys?
 	// Is there a package that can convert a struct to a map?!
 	//    There must be something in mitchellh's code!
@@ -38,6 +42,7 @@ func (u KeycloakUser) ToMap() map[string]any {
 		"username":      u.Username,
 		"firstname":     u.Firstname,
 		"lastname":      u.Lastname,
+		"email":         u.Email,
 		"emailVerified": u.EmailVerified,
 		"enabled":       u.Enabled,
 
