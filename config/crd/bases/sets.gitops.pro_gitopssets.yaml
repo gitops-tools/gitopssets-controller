@@ -618,6 +618,15 @@ spec:
                                         description: Control the users that are queried
                                           from Keycloak.
                                         properties:
+                                          allPages:
+                                            default: true
+                                            description: List all users page-by-page
+                                            type: boolean
+                                          email:
+                                            description: |-
+                                              Email filters users containing the string.
+                                              The Exact option modifies the search.
+                                            type: string
                                           emailVerified:
                                             description: EmailVerified is used to
                                               filter users with verified emails.
@@ -626,10 +635,37 @@ spec:
                                             description: Enabled is used to filter
                                               only users who are enabled.
                                             type: boolean
+                                          exact:
+                                            description: |-
+                                              Exact controls whether or not the Email, LastName, FirstName and Username
+                                              searches must match exactly.
+                                            type: boolean
+                                          firstName:
+                                            description: |-
+                                              Firstname filters users containing the string.
+                                              The Exact option modifies the search.
+                                            type: string
+                                          lastName:
+                                            description: |-
+                                              Lastname filters users containing the string.
+                                              The Exact option modifies the search.
+                                            type: string
                                           limit:
                                             description: Limit the number of results
                                               in the query.
                                             type: integer
+                                          search:
+                                            description: |-
+                                              Search filters users with the username, first or last name, or email
+                                              containing the string.
+                                            type: string
+                                          userName:
+                                            description: |-
+                                              Username filters users containing the string.
+                                              The Exact option modifies the search.
+                                            type: string
+                                        required:
+                                        - exact
                                         type: object
                                       secretRef:
                                         description: LocalObjectReference contains
@@ -777,6 +813,15 @@ spec:
                               description: Control the users that are queried from
                                 Keycloak.
                               properties:
+                                allPages:
+                                  default: true
+                                  description: List all users page-by-page
+                                  type: boolean
+                                email:
+                                  description: |-
+                                    Email filters users containing the string.
+                                    The Exact option modifies the search.
+                                  type: string
                                 emailVerified:
                                   description: EmailVerified is used to filter users
                                     with verified emails.
@@ -785,10 +830,37 @@ spec:
                                   description: Enabled is used to filter only users
                                     who are enabled.
                                   type: boolean
+                                exact:
+                                  description: |-
+                                    Exact controls whether or not the Email, LastName, FirstName and Username
+                                    searches must match exactly.
+                                  type: boolean
+                                firstName:
+                                  description: |-
+                                    Firstname filters users containing the string.
+                                    The Exact option modifies the search.
+                                  type: string
+                                lastName:
+                                  description: |-
+                                    Lastname filters users containing the string.
+                                    The Exact option modifies the search.
+                                  type: string
                                 limit:
                                   description: Limit the number of results in the
                                     query.
                                   type: integer
+                                search:
+                                  description: |-
+                                    Search filters users with the username, first or last name, or email
+                                    containing the string.
+                                  type: string
+                                userName:
+                                  description: |-
+                                    Username filters users containing the string.
+                                    The Exact option modifies the search.
+                                  type: string
+                              required:
+                              - exact
                               type: object
                             secretRef:
                               description: LocalObjectReference contains enough information
