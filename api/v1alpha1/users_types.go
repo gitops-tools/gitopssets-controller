@@ -14,6 +14,39 @@ type KeycloakUsersConfig struct {
 	// +optional
 	Enabled *bool `json:"enabled"`
 
+	// EmailVerified is used to filter users with verified emails.
+	// +optional
+	EmailVerified *bool `json:"emailVerified"`
+
+	// Email filters users containing the string.
+	// The Exact option modifies the search.
+	// +optional
+	Email string `json:"email"`
+
+	// Firstname filters users containing the string.
+	// The Exact option modifies the search.
+	// +optional
+	Firstname string `json:"firstName"`
+
+	// Lastname filters users containing the string.
+	// The Exact option modifies the search.
+	// +optional
+	Lastname string `json:"lastName"`
+
+	// Username filters users containing the string.
+	// The Exact option modifies the search.
+	// +optional
+	Username string `json:"userName"`
+
+	// Search filters users with the username, first or last name, or email
+	// containing the string.
+	// +optional
+	Search string `json:"search"`
+
+	// Exact controls whether or not the Email, LastName, FirstName and Username
+	// searches must match exactly.
+	Exact *bool `json:"exact"`
+
 	// Limit the number of results in the query.
 	// +optional
 	Limit *int `json:"limit"`
@@ -23,10 +56,6 @@ type KeycloakUsersConfig struct {
 	// +kubebuilder:default=true
 	// +optional
 	AllPages bool `json:"allPages"`
-
-	// EmailVerified is used to filter users with verified emails.
-	// +optional
-	EmailVerified *bool `json:"emailVerified"`
 }
 
 // ToValues() converts the config to URL Values for communicating with the
@@ -41,6 +70,30 @@ func (k KeycloakUsersConfig) ToValues() url.Values {
 
 	if k.EmailVerified != nil {
 		v.Set("emailVerified", fmt.Sprintf("%v", *k.EmailVerified))
+	}
+
+	if k.Exact != nil {
+		v.Set("exact", fmt.Sprintf("%v", *k.Exact))
+	}
+
+	if k.Email != "" {
+		v.Set("email", k.Email)
+	}
+
+	if k.Firstname != "" {
+		v.Set("firstName", k.Firstname)
+	}
+
+	if k.Lastname != "" {
+		v.Set("lastName", k.Lastname)
+	}
+
+	if k.Username != "" {
+		v.Set("username", k.Username)
+	}
+
+	if k.Search != "" {
+		v.Set("search", k.Search)
 	}
 
 	// The API defaults to 100 users.
