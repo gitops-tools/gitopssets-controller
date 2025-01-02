@@ -396,14 +396,19 @@ func (in *KeycloakUsersConfig) DeepCopyInto(out *KeycloakUsersConfig) {
 		*out = new(bool)
 		**out = **in
 	}
-	if in.Limit != nil {
-		in, out := &in.Limit, &out.Limit
-		*out = new(int)
-		**out = **in
-	}
 	if in.EmailVerified != nil {
 		in, out := &in.EmailVerified, &out.EmailVerified
 		*out = new(bool)
+		**out = **in
+	}
+	if in.Exact != nil {
+		in, out := &in.Exact, &out.Exact
+		*out = new(bool)
+		**out = **in
+	}
+	if in.Limit != nil {
+		in, out := &in.Limit, &out.Limit
+		*out = new(int)
 		**out = **in
 	}
 }
