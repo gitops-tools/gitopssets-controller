@@ -25,7 +25,7 @@ import (
 func TestKeycloakUsersGeneration(t *testing.T) {
 	ctx := context.TODO()
 	keycloakContainer, err := keycloak.Run(ctx,
-		"quay.io/keycloak/keycloak:26.0.6-0",
+		"quay.io/keycloak/keycloak:26.0.7-0",
 		keycloak.WithAdminCredentials("administrator", "secretpassword"),
 	)
 	test.AssertNoError(t, err)
@@ -93,11 +93,11 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 	}
 
 	queryTests := map[string]struct {
-		keycloakUsers templatesv1.KeycloakUsersConfig
+		keycloakUsers *templatesv1.KeycloakUsersConfig
 		want          []map[string]any
 	}{
 		"querying all users": {
-			keycloakUsers: templatesv1.KeycloakUsersConfig{},
+			keycloakUsers: nil,
 			want: []map[string]any{
 				administrator,
 				user1,
@@ -105,7 +105,7 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 			},
 		},
 		"limiting users": {
-			keycloakUsers: templatesv1.KeycloakUsersConfig{
+			keycloakUsers: &templatesv1.KeycloakUsersConfig{
 				Limit: ptr.To(1),
 			},
 			want: []map[string]any{
@@ -113,7 +113,7 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 			},
 		},
 		"limiting all users with all pages - queries all pages": {
-			keycloakUsers: templatesv1.KeycloakUsersConfig{
+			keycloakUsers: &templatesv1.KeycloakUsersConfig{
 				AllPages: true,
 				Limit:    ptr.To(1),
 			},
@@ -124,7 +124,7 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 			},
 		},
 		"querying enabled users": {
-			keycloakUsers: templatesv1.KeycloakUsersConfig{
+			keycloakUsers: &templatesv1.KeycloakUsersConfig{
 				Enabled: ptr.To(true),
 			},
 			want: []map[string]any{
@@ -133,7 +133,7 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 			},
 		},
 		"querying not enabled users": {
-			keycloakUsers: templatesv1.KeycloakUsersConfig{
+			keycloakUsers: &templatesv1.KeycloakUsersConfig{
 				Enabled: ptr.To(false),
 			},
 			want: []map[string]any{
@@ -141,7 +141,7 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 			},
 		},
 		"querying verified users": {
-			keycloakUsers: templatesv1.KeycloakUsersConfig{
+			keycloakUsers: &templatesv1.KeycloakUsersConfig{
 				EmailVerified: ptr.To(true),
 			},
 			want: []map[string]any{
@@ -149,7 +149,7 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 			},
 		},
 		"querying users by email": {
-			keycloakUsers: templatesv1.KeycloakUsersConfig{
+			keycloakUsers: &templatesv1.KeycloakUsersConfig{
 				Email: "example.com",
 			},
 			want: []map[string]any{
@@ -158,14 +158,14 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 			},
 		},
 		"querying users by email with exact": {
-			keycloakUsers: templatesv1.KeycloakUsersConfig{
+			keycloakUsers: &templatesv1.KeycloakUsersConfig{
 				Email: "example.com",
 				Exact: ptr.To(true),
 			},
 			want: nil,
 		},
 		"querying users by email with matching email": {
-			keycloakUsers: templatesv1.KeycloakUsersConfig{
+			keycloakUsers: &templatesv1.KeycloakUsersConfig{
 				Email: "testing1@example.com",
 				Exact: ptr.To(true),
 			},
@@ -174,7 +174,7 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 			},
 		},
 		"querying users by first name": {
-			keycloakUsers: templatesv1.KeycloakUsersConfig{
+			keycloakUsers: &templatesv1.KeycloakUsersConfig{
 				Firstname: "User",
 			},
 			want: []map[string]any{
@@ -183,14 +183,14 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 			},
 		},
 		"querying users by first name with exact": {
-			keycloakUsers: templatesv1.KeycloakUsersConfig{
+			keycloakUsers: &templatesv1.KeycloakUsersConfig{
 				Firstname: "User",
 				Exact:     ptr.To(true),
 			},
 			want: nil,
 		},
 		"querying users by first name with matching name": {
-			keycloakUsers: templatesv1.KeycloakUsersConfig{
+			keycloakUsers: &templatesv1.KeycloakUsersConfig{
 				Firstname: "User1",
 				Exact:     ptr.To(true),
 			},
@@ -199,7 +199,7 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 			},
 		},
 		"querying users by last name": {
-			keycloakUsers: templatesv1.KeycloakUsersConfig{
+			keycloakUsers: &templatesv1.KeycloakUsersConfig{
 				Lastname: "Test",
 			},
 			want: []map[string]any{
@@ -208,14 +208,14 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 			},
 		},
 		"querying users by last name with exact": {
-			keycloakUsers: templatesv1.KeycloakUsersConfig{
+			keycloakUsers: &templatesv1.KeycloakUsersConfig{
 				Lastname: "Test",
 				Exact:    ptr.To(true),
 			},
 			want: nil,
 		},
 		"querying users by last name with matching name": {
-			keycloakUsers: templatesv1.KeycloakUsersConfig{
+			keycloakUsers: &templatesv1.KeycloakUsersConfig{
 				Lastname: "Tested",
 				Exact:    ptr.To(true),
 			},
@@ -224,7 +224,7 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 			},
 		},
 		"querying users by username": {
-			keycloakUsers: templatesv1.KeycloakUsersConfig{
+			keycloakUsers: &templatesv1.KeycloakUsersConfig{
 				Username: "testing",
 			},
 			want: []map[string]any{
@@ -233,14 +233,14 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 			},
 		},
 		"querying users by username with exact": {
-			keycloakUsers: templatesv1.KeycloakUsersConfig{
+			keycloakUsers: &templatesv1.KeycloakUsersConfig{
 				Username: "testing",
 				Exact:    ptr.To(true),
 			},
 			want: nil,
 		},
 		"querying users by username with matching name": {
-			keycloakUsers: templatesv1.KeycloakUsersConfig{
+			keycloakUsers: &templatesv1.KeycloakUsersConfig{
 				Username: "testing2",
 				Exact:    ptr.To(true),
 			},
@@ -249,7 +249,7 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 			},
 		},
 		"searching users": {
-			keycloakUsers: templatesv1.KeycloakUsersConfig{
+			keycloakUsers: &templatesv1.KeycloakUsersConfig{
 				Search: "testing",
 			},
 			want: []map[string]any{
@@ -258,7 +258,7 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 			},
 		},
 		"querying users with attributes": {
-			keycloakUsers: templatesv1.KeycloakUsersConfig{
+			keycloakUsers: &templatesv1.KeycloakUsersConfig{
 				Query: map[string]string{
 					"testing": "value1",
 				},
@@ -280,7 +280,7 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 						SecretRef: &templatesv1.LocalObjectReference{
 							Name: secret.Name,
 						},
-						QueryConfig: &tt.keycloakUsers,
+						QueryConfig: tt.keycloakUsers,
 					},
 				},
 			}
@@ -310,6 +310,75 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 	}
 }
 
+func TestKeycloakUsersGenerationErrors(t *testing.T) {
+	secret1 := newSecret(map[string]string{"token": "ABCDEF"}, withSecretName("secret1"))
+	secret2 := newSecret(map[string]string{}, withSecretName("secret2"))
+
+	errorTests := map[string]struct {
+		usersGenerator *templatesv1.UsersGenerator
+		want           string
+	}{
+		"secret does not exist": {
+			usersGenerator: &templatesv1.UsersGenerator{
+				Keycloak: &templatesv1.KeycloakUsersGeneration{
+					Endpoint: "https://keycloak.example.com",
+					SecretRef: &templatesv1.LocalObjectReference{
+						Name: "does-not-exist",
+					},
+				},
+			},
+			want: `failed to load keycloak credentials: secrets "does-not-exist" not found`,
+		},
+		"missing token in secret": {
+			usersGenerator: &templatesv1.UsersGenerator{
+				Keycloak: &templatesv1.KeycloakUsersGeneration{
+					Endpoint: "https://keycloak.example.com",
+					SecretRef: &templatesv1.LocalObjectReference{
+						Name: secret2.Name,
+					},
+				},
+			},
+			want: `secret default/secret2 does not contain required field 'token'`,
+		},
+		"invalid endpoint": {
+			usersGenerator: &templatesv1.UsersGenerator{
+				Keycloak: &templatesv1.KeycloakUsersGeneration{
+					Endpoint: "https://keycloak.example.com",
+					SecretRef: &templatesv1.LocalObjectReference{
+						Name: secret1.Name,
+					},
+				},
+			},
+			want: `failed Keycloak HTTP request`,
+		},
+	}
+
+	for name, tt := range errorTests {
+		t.Run(name, func(t *testing.T) {
+			generator := NewGenerator(logr.Discard(), newFakeClient(t, secret1, secret2), generators.DefaultClientFactory)
+
+			gsg := templatesv1.GitOpsSetGenerator{
+				Users: tt.usersGenerator,
+			}
+
+			_, err := generator.Generate(context.TODO(), &gsg,
+				&templatesv1.GitOpsSet{
+					ObjectMeta: metav1.ObjectMeta{
+						Name:      "demo-set",
+						Namespace: "default",
+					},
+					Spec: templatesv1.GitOpsSetSpec{
+						Generators: []templatesv1.GitOpsSetGenerator{
+							gsg,
+						},
+					},
+				})
+			test.AssertErrorMatch(t, tt.want, err)
+		})
+	}
+
+}
+
 func newFakeClient(t *testing.T, objs ...runtime.Object) client.WithWatch {
 	scheme := runtime.NewScheme()
 	test.AssertNoError(t, clientgoscheme.AddToScheme(scheme))
@@ -320,6 +389,13 @@ func newFakeClient(t *testing.T, objs ...runtime.Object) client.WithWatch {
 		Build()
 }
 
+func withSecretName(n string) func(*corev1.Secret) {
+	return func(s *corev1.Secret) {
+		s.ObjectMeta.Name = n
+	}
+}
+
+// TODO: Use test.NewSecret?
 func newSecret(data map[string]string, opts ...func(*corev1.Secret)) *corev1.Secret {
 	cm := &corev1.Secret{
 		TypeMeta: metav1.TypeMeta{

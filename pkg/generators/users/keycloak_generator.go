@@ -61,7 +61,12 @@ func (k *UsersGenerator) generateKeycloakUsers(ctx context.Context, sg *template
 		return nil, err
 	}
 
-	query := sg.Users.Keycloak.QueryConfig.ToValues()
+	// TODO: Handle nil QueryConfig!
+
+	query := url.Values{}
+	if sg.Users.Keycloak.QueryConfig != nil {
+		query = sg.Users.Keycloak.QueryConfig.ToValues()
+	}
 
 	// TODO: This should allow customisation of the TLS setup
 
@@ -84,9 +89,11 @@ func (k *UsersGenerator) generateKeycloakUsers(ctx context.Context, sg *template
 		}
 
 		combinedResult = append(combinedResult, result...)
-		if !sg.Users.Keycloak.QueryConfig.AllPages {
+
+		if sg.Users.Keycloak.QueryConfig == nil || (sg.Users.Keycloak.QueryConfig != nil && !sg.Users.Keycloak.QueryConfig.AllPages) {
 			break
 		}
+
 		pageNumber++
 	}
 
@@ -104,7 +111,7 @@ func getUsers(client *http.Client, endpoint, authToken string, query url.Values)
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, fmt.Errorf("failed HTTP request to %q: %w", endpoint, err)
+		return nil, fmt.Errorf("failed Keycloak HTTP request: %w", err)
 	}
 
 	if resp.StatusCode > http.StatusOK {
@@ -136,7 +143,7 @@ func getUsers(client *http.Client, endpoint, authToken string, query url.Values)
 func getSecretToken(ctx context.Context, secretName types.NamespacedName, secretClient client.Reader) (string, error) {
 	var secret corev1.Secret
 	if err := secretClient.Get(ctx, secretName, &secret); err != nil {
-		return "", fmt.Errorf("failed to load repository generator credentials: %w", err)
+		return "", fmt.Errorf("failed to load keycloak credentials: %w", err)
 	}
 	data, ok := secret.Data["token"]
 	if !ok {
