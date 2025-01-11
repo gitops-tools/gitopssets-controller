@@ -1,0 +1,11 @@
+---
+apiVersion: v1
+data:
+  names: cluster1,cluster2,cluster3,
+kind: ConfigMap
+metadata:
+  labels:
+    sets.gitops.pro/name: single-element-test
+    sets.gitops.pro/namespace: default
+  name: test-configmap
+  namespace: default
