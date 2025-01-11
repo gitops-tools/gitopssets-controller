@@ -9,6 +9,7 @@ import (
 	"github.com/go-logr/logr"
 	"github.com/google/go-cmp/cmp"
 	corev1 "k8s.io/api/core/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	apiextensionsv1 "k8s.io/apiextensions-apiserver/pkg/apis/apiextensions/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -16,6 +17,7 @@ import (
 	yamlserializer "k8s.io/apimachinery/pkg/runtime/serializer/yaml"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/apimachinery/pkg/util/intstr"
+	"sigs.k8s.io/yaml"
 
 	templatesv1 "github.com/gitops-tools/gitopssets-controller/api/v1alpha1"
 	"github.com/gitops-tools/gitopssets-controller/pkg/generators"
@@ -139,11 +141,11 @@ func TestRender(t *testing.T) {
 				test.ToUnstructured(t, makeTestService(nsn(testNS, "engineering-dev-demo1"), setClusterIP("192.168.50.50"),
 					addAnnotations(map[string]string{"app.kubernetes.io/instance": "engineering-dev"}),
 					addLabels[*corev1.Service](map[string]string{"sets.gitops.pro/name": "test-gitops-set", "sets.gitops.pro/namespace": testNS}))),
-				test.ToUnstructured(t, makeTestService(nsn(testNS, "engineering-dev-demo2"), setClusterIP("192.168.50.50"),
-					addAnnotations(map[string]string{"app.kubernetes.io/instance": "engineering-dev"}),
-					addLabels[*corev1.Service](map[string]string{"sets.gitops.pro/name": "test-gitops-set", "sets.gitops.pro/namespace": testNS}))),
 				test.ToUnstructured(t, makeTestService(nsn(testNS, "engineering-prod-demo1"), setClusterIP("192.168.100.20"),
 					addAnnotations(map[string]string{"app.kubernetes.io/instance": "engineering-prod"}),
+					addLabels[*corev1.Service](map[string]string{"sets.gitops.pro/name": "test-gitops-set", "sets.gitops.pro/namespace": testNS}))),
+				test.ToUnstructured(t, makeTestService(nsn(testNS, "engineering-dev-demo2"), setClusterIP("192.168.50.50"),
+					addAnnotations(map[string]string{"app.kubernetes.io/instance": "engineering-dev"}),
 					addLabels[*corev1.Service](map[string]string{"sets.gitops.pro/name": "test-gitops-set", "sets.gitops.pro/namespace": testNS}))),
 				test.ToUnstructured(t, makeTestService(nsn(testNS, "engineering-prod-demo2"), setClusterIP("192.168.100.20"),
 					addAnnotations(map[string]string{"app.kubernetes.io/instance": "engineering-prod"}),
@@ -531,6 +533,11 @@ func TestRender_files(t *testing.T) {
 			filename: "testdata/template-with-top-level-elements.yaml",
 			want:     "testdata/template-with-top-level-elements-rendered.yaml",
 		},
+
+		{
+			filename: "testdata/template-with-rolebinding.yaml",
+			want:     "testdata/template-with-rolebinding-rendered.yaml",
+		},
 	}
 
 	for _, tt := range generatorTests {
@@ -710,6 +717,25 @@ func makeTestNamespace(name string, opts ...func(*corev1.Namespace)) *corev1.Nam
 	return &n
 }
 
+func makeTestRoleBinding(name types.NamespacedName, opts ...func(*rbacv1.RoleBinding)) *rbacv1.RoleBinding {
+	r := rbacv1.RoleBinding{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "RoleBinding",
+			APIVersion: "rbac.authorization.k8s.io/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      name.Name,
+			Namespace: name.Namespace,
+		},
+		Subjects: []rbacv1.Subject{},
+	}
+	for _, o := range opts {
+		o(&r)
+	}
+
+	return &r
+}
+
 func setClusterIP(ip string) func(s *corev1.Service) {
 	return func(s *corev1.Service) {
 		s.Spec.ClusterIP = ip
@@ -746,13 +772,35 @@ func nsn(namespace, name string) types.NamespacedName {
 	}
 }
 
+func readTemplate(t *testing.T, filename string) []byte {
+	t.Helper()
+
+	b, err := os.ReadFile(filename)
+	test.AssertNoError(t, err)
+
+	return b
+}
+
+func readTemplateAsUnstructured(t *testing.T, filename string) *unstructured.Unstructured {
+	t.Helper()
+
+	b := readTemplate(t, filename)
+
+	m, _, err := yamlserializer.NewDecodingSerializer(unstructured.UnstructuredJSONScheme).Decode(b, nil, nil)
+	test.AssertNoError(t, err)
+
+	raw, err := runtime.DefaultUnstructuredConverter.ToUnstructured(m)
+	test.AssertNoError(t, err)
+
+	return &unstructured.Unstructured{Object: raw}
+}
+
 func readFixtureAsGitOpsSet(t *testing.T, filename string) *templatesv1.GitOpsSet {
 	t.Helper()
 	scheme, err := setup.NewSchemeForGenerators(setup.DefaultGenerators)
 	test.AssertNoError(t, err)
 
-	b, err := os.ReadFile(filename)
-	test.AssertNoError(t, err)
+	b := readTemplate(t, filename)
 
 	m, _, err := yamlserializer.NewDecodingSerializer(unstructured.UnstructuredJSONScheme).Decode(b, nil, nil)
 	test.AssertNoError(t, err)
@@ -771,7 +819,7 @@ func readFixtureAsGitOpsSet(t *testing.T, filename string) *templatesv1.GitOpsSe
 }
 
 func assertFixturesMatch(t *testing.T, filename string, objs []*unstructured.Unstructured) {
-	// t.Helper()
+	t.Helper()
 
 	fixture, err := os.ReadFile(filename)
 	if err != nil {
@@ -795,6 +843,30 @@ func assertFixturesMatch(t *testing.T, filename string, objs []*unstructured.Uns
 	}
 
 	if diff := cmp.Diff(want, objs); diff != "" {
-		t.Fatalf("failed to match fixtures:\n%s", diff)
+		if os.Getenv("REWRITE_GOLDEN_FILE") == "test" {
+			writeObjectsAsYAML(t, filename, objs)
+			return
+		}
+
+		t.Errorf("failed to match fixtures:\n%s", diff)
+	}
+}
+
+func writeObjectsAsYAML(t *testing.T, filename string, objs []*unstructured.Unstructured) {
+	t.Helper()
+	var yamls [][]byte
+
+	for _, v := range objs {
+		b, err := yaml.Marshal(v)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		yamls = append(yamls, b)
+	}
+
+	fileContent := bytes.Join(yamls, []byte("---\n"))
+	if err := os.WriteFile(filename, append([]byte("---\n"), fileContent...), 0644); err != nil {
+		t.Fatal(err)
 	}
 }
