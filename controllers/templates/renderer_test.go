@@ -533,10 +533,13 @@ func TestRender_files(t *testing.T) {
 			filename: "testdata/template-with-top-level-elements.yaml",
 			want:     "testdata/template-with-top-level-elements-rendered.yaml",
 		},
-
 		{
 			filename: "testdata/template-with-rolebinding.yaml",
 			want:     "testdata/template-with-rolebinding-rendered.yaml",
+		},
+		{
+			filename: "testdata/template-with-single-element.yaml",
+			want:     "testdata/template-with-single-element-rendered.yaml",
 		},
 	}
 
