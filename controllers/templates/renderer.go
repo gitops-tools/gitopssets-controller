@@ -5,7 +5,6 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"log"
 	"strings"
 	"text/template"
 
@@ -70,11 +69,16 @@ func Render(ctx context.Context, r *templatesv1.GitOpsSet, configuredGenerators 
 func renderSingleTemplate(ctx context.Context, r *templatesv1.GitOpsSet, generated [][]map[string]any, template templatesv1.GitOpsSetTemplate) ([]*unstructured.Unstructured, error) {
 	var rendered []*unstructured.Unstructured
 
+	content := []byte(template.Raw)
+	if template.Content.Raw != nil {
+		content = template.Content.Raw
+	}
+
 	for _, params := range generated {
 		params := map[string]any{
 			"Elements": params,
 		}
-		resources, err := renderTemplateWithParams([]byte(template.Raw), params, *r)
+		resources, err := renderTemplateWithParams([]byte(content), params, *r)
 		if err != nil {
 			return nil, fmt.Errorf("failed to render template params for set %s: %w", r.GetName(), err)
 		}
@@ -201,9 +205,6 @@ func renderTemplateParams(index int, tmpl templatesv1.GitOpsSetTemplate, params 
 
 func renderTemplateWithParams(yamlBytes []byte, params map[string]any, gs templatesv1.GitOpsSet) ([]*unstructured.Unstructured, error) {
 	var objects []*unstructured.Unstructured
-
-	log.Printf("renderTemplateWithParams got %#v", params)
-
 	rendered, err := render(yamlBytes, params, gs)
 	if err != nil {
 		return nil, err
