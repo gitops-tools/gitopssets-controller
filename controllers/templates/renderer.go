@@ -5,6 +5,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log"
 	"strings"
 	"text/template"
 
@@ -35,7 +36,7 @@ var templateFuncs template.FuncMap = makeTemplateFunctions()
 // Render parses the GitOpsSet and renders the template resources using
 // the configured generators and templates.
 func Render(ctx context.Context, r *templatesv1.GitOpsSet, configuredGenerators map[string]generators.Generator) ([]*unstructured.Unstructured, error) {
-	rendered := []*unstructured.Unstructured{}
+	allRendered := []*unstructured.Unstructured{}
 
 	index := 0
 	for _, gen := range r.Spec.Generators {
@@ -45,17 +46,56 @@ func Render(ctx context.Context, r *templatesv1.GitOpsSet, configuredGenerators 
 		}
 
 		for _, template := range r.Spec.Templates {
-			for _, params := range generated {
-				for _, param := range params {
-					res, err := renderTemplateParams(index, template, param, *r)
-					if err != nil {
-						return nil, fmt.Errorf("failed to render template params for set %s: %w", r.GetName(), err)
-					}
-
-					rendered = append(rendered, res...)
-					index++
+			if template.Single {
+				rendered, err := renderSingleTemplate(ctx, r, generated, template)
+				if err != nil {
+					return nil, err
 				}
+				allRendered = append(allRendered, rendered...)
+				index += len(rendered)
+			} else {
+				rendered, err := renderDefaultTemplate(ctx, r, generated, template, index)
+				if err != nil {
+					return nil, err
+				}
+				allRendered = append(allRendered, rendered...)
+				index += len(rendered)
 			}
+		}
+	}
+
+	return allRendered, nil
+}
+
+func renderSingleTemplate(ctx context.Context, r *templatesv1.GitOpsSet, generated [][]map[string]any, template templatesv1.GitOpsSetTemplate) ([]*unstructured.Unstructured, error) {
+	var rendered []*unstructured.Unstructured
+
+	for _, params := range generated {
+		params := map[string]any{
+			"Elements": params,
+		}
+		resources, err := renderTemplateWithParams([]byte(template.Raw), params, *r)
+		if err != nil {
+			return nil, fmt.Errorf("failed to render template params for set %s: %w", r.GetName(), err)
+		}
+
+		rendered = append(rendered, resources...)
+	}
+
+	return rendered, nil
+}
+
+func renderDefaultTemplate(ctx context.Context, r *templatesv1.GitOpsSet, generated [][]map[string]any, template templatesv1.GitOpsSetTemplate, index int) ([]*unstructured.Unstructured, error) {
+	rendered := []*unstructured.Unstructured{}
+	for _, params := range generated {
+		for _, param := range params {
+			res, err := renderTemplateParams(index, template, param, *r)
+			if err != nil {
+				return nil, fmt.Errorf("failed to render template params for set %s: %w", r.GetName(), err)
+			}
+
+			rendered = append(rendered, res...)
+			index++
 		}
 	}
 
@@ -132,76 +172,85 @@ func renderTemplateParams(index int, tmpl templatesv1.GitOpsSetTemplate, params 
 		return nil, err
 	}
 
-	var yamlBytes []byte
-
-	if tmpl.Raw != "" {
-		yamlBytes = []byte(tmpl.Raw)
-	} else {
-		// Raw extension is always JSON bytes, so convert back to YAML bytes as the gitopssets was
-		// most likely written in YAML, this supports correctly templating numbers
-		//
-		// Example:
-		// 1. As the yaml gitops.yaml file we have: `num: ${{ .Element.Number }}`
-		// 2. As the RawExtension (JSON) when gitops.yaml is loaded to cluster: `{ "num": "${{ .Element.Number }}"}`
-		// 3. [HERE] Convert back to YAML bytes which strips quotes again: `num: ${{ .Element.Number }}`
-		// 4. Rendered correctly as a number type without quotes: `num: 1`
-		// 5. Applied back into the cluster as number type
-		//
-		yamlBytes, err = syaml.JSONToYAML(tmpl.Content.Raw)
-		if err != nil {
-			return nil, fmt.Errorf("failed to convert template to YAML: %w", err)
-		}
+	// Raw extension is always JSON bytes, so convert back to YAML bytes as the gitopssets was
+	// most likely written in YAML, this supports correctly templating numbers
+	//
+	// Example:
+	// 1. As the yaml gitops.yaml file we have: `num: ${{ .Element.Number }}`
+	// 2. As the RawExtension (JSON) when gitops.yaml is loaded to cluster: `{ "num": "${{ .Element.Number }}"}`
+	// 3. [HERE] Convert back to YAML bytes which strips quotes again: `num: ${{ .Element.Number }}`
+	// 4. Rendered correctly as a number type without quotes: `num: 1`
+	// 5. Applied back into the cluster as number type
+	//
+	yamlBytes, err := syaml.JSONToYAML(tmpl.Content.Raw)
+	if err != nil {
+		return nil, fmt.Errorf("failed to convert template to YAML: %w", err)
 	}
 
 	for _, p := range repeatedParams {
-		rendered, err := render(yamlBytes, p, gs)
+		rendered, err := renderTemplateWithParams(yamlBytes, p, gs)
 		if err != nil {
 			return nil, err
 		}
 
-		// Technically multiple objects could be in the YAML...
-		decoder := yaml.NewYAMLOrJSONDecoder(bytes.NewReader(rendered), 100)
-		for {
-			var rawObj runtime.RawExtension
-			if err := decoder.Decode(&rawObj); err != nil {
-				if err != io.EOF {
-					return nil, fmt.Errorf("failed to parse rendered template: %w", err)
-				}
-				break
-			}
+		objects = append(objects, rendered...)
+	}
 
-			m, _, err := yamlserializer.NewDecodingSerializer(unstructured.UnstructuredJSONScheme).Decode(rawObj.Raw, nil, nil)
-			if err != nil {
-				return nil, fmt.Errorf("failed to decode rendered template: %w", err)
-			}
+	return objects, nil
+}
 
-			unstructuredMap, err := runtime.DefaultUnstructuredConverter.ToUnstructured(m)
-			if err != nil {
-				return nil, fmt.Errorf("failed convert parsed template: %w", err)
-			}
-			delete(unstructuredMap, "status")
-			uns := &unstructured.Unstructured{Object: unstructuredMap}
+func renderTemplateWithParams(yamlBytes []byte, params map[string]any, gs templatesv1.GitOpsSet) ([]*unstructured.Unstructured, error) {
+	var objects []*unstructured.Unstructured
 
-			if IsNamespacedObject(uns) {
-				if uns.GetNamespace() == "" {
-					uns.SetNamespace(gs.GetNamespace())
-				}
-			}
+	log.Printf("renderTemplateWithParams got %#v", params)
 
-			// Add source labels
-			labels := map[string]string{
-				"sets.gitops.pro/name":      gs.GetName(),
-				"sets.gitops.pro/namespace": gs.GetNamespace(),
-			}
+	rendered, err := render(yamlBytes, params, gs)
+	if err != nil {
+		return nil, err
+	}
 
-			renderedLabels := uns.GetLabels()
-			if err := mergo.Merge(&labels, renderedLabels, mergo.WithOverride); err != nil {
-				return nil, fmt.Errorf("failed to merge existing labels to default labels: %w", err)
+	// Technically multiple objects could be in the YAML...
+	decoder := yaml.NewYAMLOrJSONDecoder(bytes.NewReader(rendered), 100)
+	for {
+		var rawObj runtime.RawExtension
+		if err := decoder.Decode(&rawObj); err != nil {
+			if err != io.EOF {
+				return nil, fmt.Errorf("failed to parse rendered template: %w", err)
 			}
-			uns.SetLabels(labels)
-
-			objects = append(objects, uns)
+			break
 		}
+
+		m, _, err := yamlserializer.NewDecodingSerializer(unstructured.UnstructuredJSONScheme).Decode(rawObj.Raw, nil, nil)
+		if err != nil {
+			return nil, fmt.Errorf("failed to decode rendered template: %w", err)
+		}
+
+		unstructuredMap, err := runtime.DefaultUnstructuredConverter.ToUnstructured(m)
+		if err != nil {
+			return nil, fmt.Errorf("failed convert parsed template: %w", err)
+		}
+		delete(unstructuredMap, "status")
+		uns := &unstructured.Unstructured{Object: unstructuredMap}
+
+		if IsNamespacedObject(uns) {
+			if uns.GetNamespace() == "" {
+				uns.SetNamespace(gs.GetNamespace())
+			}
+		}
+
+		// Add source labels
+		labels := map[string]string{
+			"sets.gitops.pro/name":      gs.GetName(),
+			"sets.gitops.pro/namespace": gs.GetNamespace(),
+		}
+
+		renderedLabels := uns.GetLabels()
+		if err := mergo.Merge(&labels, renderedLabels, mergo.WithOverride); err != nil {
+			return nil, fmt.Errorf("failed to merge existing labels to default labels: %w", err)
+		}
+		uns.SetLabels(labels)
+
+		objects = append(objects, uns)
 	}
 
 	return objects, nil
