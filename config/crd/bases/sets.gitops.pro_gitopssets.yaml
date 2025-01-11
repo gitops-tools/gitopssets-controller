@@ -725,14 +725,22 @@ spec:
                       description: Content is the YAML to be templated and generated.
                       type: object
                       x-kubernetes-preserve-unknown-fields: true
+                    raw:
+                      description: |-
+                        Raw is a raw string that can be rendered.
+                        This can be used to use templates that are not valid YAML.
+                      type: string
                     repeat:
                       description: |-
                         Repeat is a JSONPath string defining that the template content should be
                         repeated for each of the matching elements in the JSONPath expression.
                         https://kubernetes.io/docs/reference/kubectl/jsonpath/
                       type: string
-                  required:
-                  - content
+                    single:
+                      description: |-
+                        Single is a JSONPath string defining that the template content should be
+                        rendered once with all generated elements passed to the template.
+                      type: boolean
                   type: object
                 type: array
             type: object
