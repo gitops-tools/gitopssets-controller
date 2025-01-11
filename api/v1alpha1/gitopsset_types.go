@@ -23,9 +23,23 @@ type GitOpsSetTemplate struct {
 	// Repeat is a JSONPath string defining that the template content should be
 	// repeated for each of the matching elements in the JSONPath expression.
 	// https://kubernetes.io/docs/reference/kubectl/jsonpath/
+	// +optional
 	Repeat string `json:"repeat,omitempty"`
+
+	// Single is a JSONPath string defining that the template content should be
+	// rendered once with all generated elements passed to the template.
+	// +optional
+	Single bool `json:"single"`
+
 	// Content is the YAML to be templated and generated.
-	Content runtime.RawExtension `json:"content"`
+	//
+	// +optional
+	Content runtime.RawExtension `json:"content,omitempty"`
+
+	// Raw is a raw string that can be rendered.
+	// This can be used to use templates that are not valid YAML.
+	// +optional
+	Raw string `json:"raw,omitempty"`
 }
 
 // ClusterGenerator defines a generator that queries the cluster API for
