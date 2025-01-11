@@ -44,9 +44,9 @@ func Render(ctx context.Context, r *templatesv1.GitOpsSet, configuredGenerators 
 			return nil, fmt.Errorf("failed to generate template for set %s: %w", r.GetName(), err)
 		}
 
-		for _, params := range generated {
-			for _, param := range params {
-				for _, template := range r.Spec.Templates {
+		for _, template := range r.Spec.Templates {
+			for _, params := range generated {
+				for _, param := range params {
 					res, err := renderTemplateParams(index, template, param, *r)
 					if err != nil {
 						return nil, fmt.Errorf("failed to render template params for set %s: %w", r.GetName(), err)
@@ -63,6 +63,16 @@ func Render(ctx context.Context, r *templatesv1.GitOpsSet, configuredGenerators 
 }
 
 func repeat(index int, tmpl templatesv1.GitOpsSetTemplate, params map[string]any) ([]map[string]any, error) {
+	if tmpl.Single {
+		return []map[string]any{
+			map[string]any{
+				"Single": map[string]any{
+					"Elements": params,
+				},
+			},
+		}, nil
+	}
+
 	if tmpl.Repeat == "" {
 		return []map[string]any{
 			map[string]any{
@@ -111,6 +121,9 @@ func repeat(index int, tmpl templatesv1.GitOpsSetTemplate, params map[string]any
 	return elements, nil
 }
 
+// TODO Validation hook to ensure content or raw - can't likely validate the
+// raw data because it will contain template elements.
+
 func renderTemplateParams(index int, tmpl templatesv1.GitOpsSetTemplate, params map[string]any, gs templatesv1.GitOpsSet) ([]*unstructured.Unstructured, error) {
 	var objects []*unstructured.Unstructured
 
@@ -119,19 +132,25 @@ func renderTemplateParams(index int, tmpl templatesv1.GitOpsSetTemplate, params 
 		return nil, err
 	}
 
-	// Raw extension is always JSON bytes, so convert back to YAML bytes as the gitopssets was
-	// most likely written in YAML, this supports correctly templating numbers
-	//
-	// Example:
-	// 1. As the yaml gitops.yaml file we have: `num: ${{ .Element.Number }}`
-	// 2. As the RawExtension (JSON) when gitops.yaml is loaded to cluster: `{ "num": "${{ .Element.Number }}"}`
-	// 3. [HERE] Convert back to YAML bytes which strips quotes again: `num: ${{ .Element.Number }}`
-	// 4. Rendered correctly as a number type without quotes: `num: 1`
-	// 5. Applied back into the cluster as number type
-	//
-	yamlBytes, err := syaml.JSONToYAML(tmpl.Content.Raw)
-	if err != nil {
-		return nil, fmt.Errorf("failed to convert template to YAML: %w", err)
+	var yamlBytes []byte
+
+	if tmpl.Raw != "" {
+		yamlBytes = []byte(tmpl.Raw)
+	} else {
+		// Raw extension is always JSON bytes, so convert back to YAML bytes as the gitopssets was
+		// most likely written in YAML, this supports correctly templating numbers
+		//
+		// Example:
+		// 1. As the yaml gitops.yaml file we have: `num: ${{ .Element.Number }}`
+		// 2. As the RawExtension (JSON) when gitops.yaml is loaded to cluster: `{ "num": "${{ .Element.Number }}"}`
+		// 3. [HERE] Convert back to YAML bytes which strips quotes again: `num: ${{ .Element.Number }}`
+		// 4. Rendered correctly as a number type without quotes: `num: 1`
+		// 5. Applied back into the cluster as number type
+		//
+		yamlBytes, err = syaml.JSONToYAML(tmpl.Content.Raw)
+		if err != nil {
+			return nil, fmt.Errorf("failed to convert template to YAML: %w", err)
+		}
 	}
 
 	for _, p := range repeatedParams {

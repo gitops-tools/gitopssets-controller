@@ -1,0 +1,36 @@
+apiVersion: sets.gitops.pro/v1alpha1
+kind: GitOpsSet
+metadata:
+  labels:
+    app.kubernetes.io/name: gitopsset
+    app.kubernetes.io/instance: gitopsset-sample
+    app.kubernetes.io/part-of: gitopssets-controller
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/created-by: gitopssets-controller
+  name: single-element-test
+  namespace: default
+spec:
+  generators:
+    - list:
+        elements:
+          - username: user1
+          - username: user2
+          - username: user3
+  templates:
+    - single: true
+      raw: |
+        apiVersion: rbac.authorization.k8s.io/v1
+        kind: RoleBinding
+        metadata:
+          name: read-secrets
+          namespace: demo
+        subjects:
+          {{- range .Single.Elements }}
+          - kind: User
+            name: {{ .username }}
+            apiGroup: rbac.authorization.k8s.io
+          {{- end }}
+        roleRef:
+          kind: ClusterRole
+          name: secret-reader
+          apiGroup: rbac.authorization.k8s.io

@@ -1,0 +1,22 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: read-secrets
+  namespace: demo
+  labels:
+    sets.gitops.pro/name: test-gitops-set
+    sets.gitops.pro/namespace: demo
+subjects:
+- kind: User
+  name: user1
+  apiGroup: rbac.authorization.k8s.io
+- kind: User
+  name: user2
+  apiGroup: rbac.authorization.k8s.io
+- kind: User
+  name: user3
+  apiGroup: rbac.authorization.k8s.io
+roleRef:
+  kind: ClusterRole
+  name: secret-reader
+  apiGroup: rbac.authorization.k8s.io

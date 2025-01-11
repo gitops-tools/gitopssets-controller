@@ -29,28 +29,6 @@ metadata:
   labels:
     sets.gitops.pro/name: config-maps
     sets.gitops.pro/namespace: wge
-  name: c1-customer
-  namespace: wge
----
-apiVersion: v1
-data:
-  shardId: "1"
-kind: ConfigMap
-metadata:
-  labels:
-    sets.gitops.pro/name: config-maps
-    sets.gitops.pro/namespace: wge
-  name: c2-customer
-  namespace: wge
----
-apiVersion: v1
-data:
-  shardId: "0"
-kind: ConfigMap
-metadata:
-  labels:
-    sets.gitops.pro/name: config-maps
-    sets.gitops.pro/namespace: wge
   name: team4-team
   namespace: wge
 ---
@@ -63,6 +41,28 @@ metadata:
     sets.gitops.pro/name: config-maps
     sets.gitops.pro/namespace: wge
   name: team5-team
+  namespace: wge
+---
+apiVersion: v1
+data:
+  shardId: "0"
+kind: ConfigMap
+metadata:
+  labels:
+    sets.gitops.pro/name: config-maps
+    sets.gitops.pro/namespace: wge
+  name: c1-customer
+  namespace: wge
+---
+apiVersion: v1
+data:
+  shardId: "1"
+kind: ConfigMap
+metadata:
+  labels:
+    sets.gitops.pro/name: config-maps
+    sets.gitops.pro/namespace: wge
+  name: c2-customer
   namespace: wge
 ---
 apiVersion: v1
