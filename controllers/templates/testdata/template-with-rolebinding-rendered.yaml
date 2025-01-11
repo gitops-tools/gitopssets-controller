@@ -4,8 +4,8 @@ metadata:
   name: read-secrets
   namespace: demo
   labels:
-    sets.gitops.pro/name: test-gitops-set
-    sets.gitops.pro/namespace: demo
+    sets.gitops.pro/name: single-element-test
+    sets.gitops.pro/namespace: default
 subjects:
 - kind: User
   name: user1
