@@ -7,7 +7,7 @@ toolchain go1.24.2
 require (
 	dario.cat/mergo v1.0.2
 	github.com/Masterminds/sprig/v3 v3.3.0
-	github.com/bigkevmcd/testcontainer-modules/keycloak v0.0.3
+	github.com/bigkevmcd/testcontainer-modules/keycloak v0.0.4
 	github.com/cyphar/filepath-securejoin v0.4.1
 	github.com/fluxcd/image-reflector-controller/api v0.35.2
 	github.com/fluxcd/kustomize-controller/api v1.6.1
@@ -27,7 +27,7 @@ require (
 	github.com/spf13/cobra v1.9.1
 	github.com/spf13/pflag v1.0.7
 	github.com/stretchr/testify v1.11.0
-	github.com/testcontainers/testcontainers-go v0.34.0
+	github.com/testcontainers/testcontainers-go v0.35.0
 	github.com/weaveworks/cluster-controller v1.6.0
 	go.uber.org/zap v1.27.0
 	golang.org/x/exp v0.0.0-20240808152545-0cdaa3abc0fa

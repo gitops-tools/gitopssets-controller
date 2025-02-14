@@ -38,18 +38,21 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 	}
 	test.AssertNoError(t, keycloakContainer.EnableUnmanagedAttributes(ctx, token))
 
-	test.AssertNoError(t, keycloakContainer.CreateUser(ctx, token, keycloak.CreateUserRequest{
+	_, err = keycloakContainer.CreateUser(ctx, token, keycloak.CreateUserRequest{
 		Username: "testing1", Enabled: false, Firstname: "User1", Lastname: "Tested",
 		Email: "testing1@example.com", EmailVerified: false,
 		Attributes: map[string][]string{
 			"testing": {"value1"},
-		}}))
-	test.AssertNoError(t, keycloakContainer.CreateUser(ctx, token, keycloak.CreateUserRequest{
+		}})
+	test.AssertNoError(t, err)
+
+	_, err = keycloakContainer.CreateUser(ctx, token, keycloak.CreateUserRequest{
 		Username: "testing2", Enabled: true, Firstname: "User2", Lastname: "Testing",
 		Email: "testing2@example.com", EmailVerified: true,
 		Attributes: map[string][]string{
 			"testing": {"value2"},
-		}}))
+		}})
+	test.AssertNoError(t, err)
 
 	realmEndpoint, err := keycloakContainer.EndpointPath(ctx, "/admin/realms/master")
 	test.AssertNoError(t, err)
