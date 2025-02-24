@@ -51,8 +51,8 @@ github.com/fluxcd/cli-utils v0.36.0-flux.12 h1:8cD6SmaKa/lGo0KCu0XWiGrXJMLMBQwSs
 github.com/fluxcd/cli-utils v0.36.0-flux.12/go.mod h1:Nb/zMqsJAzjz4/HIsEc2LTqxC6eC0rV26t4hkJT/F9o=
 github.com/fluxcd/image-reflector-controller/api v0.34.0 h1:+0AGoaYzHYXzVDQO9xq2eGZKkPl81Bfz6xFI7rElBzs=
 github.com/fluxcd/image-reflector-controller/api v0.34.0/go.mod h1:C6742RYyZVt2KIyJv16lb4gYbsK+P1RGQeaQ8C8huec=
-github.com/fluxcd/kustomize-controller/api v1.4.0 h1:QReBAuNAlrAez4aLkbYjVlWDCIZABFsKPgRa9W05VCQ=
-github.com/fluxcd/kustomize-controller/api v1.4.0/go.mod h1:z1SD5EJS+vbGmF6B17x8aJfT5nnzGVEQ+3WGquOmhwA=
+github.com/fluxcd/kustomize-controller/api v1.5.0 h1:OZ9zZIGwHBI3KY5mQgf6TuBnqUW8xZqZz9jEYDJMDqI=
+github.com/fluxcd/kustomize-controller/api v1.5.0/go.mod h1:AtZTX2tcFrL6RQ6tfbfJGw5/WOYpBURy40qVoaf4ig0=
 github.com/fluxcd/pkg/apis/acl v0.6.0 h1:rllf5uQLzTow81ZCslkQ6LPpDNqVQr6/fWaNksdUEtc=
 github.com/fluxcd/pkg/apis/acl v0.6.0/go.mod h1:IVDZx3MAoDWjlLrJHMF9Z27huFuXAEQlnbWw0M6EcTs=
 github.com/fluxcd/pkg/apis/event v0.16.0 h1:ffKc/3erowPnh72lFszz7sPQhLZ7bhqNrq+pu1Pb+JE=
