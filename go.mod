@@ -19,7 +19,7 @@ require (
 	github.com/gitops-tools/pkg v0.2.0
 	github.com/go-logr/logr v1.4.2
 	github.com/go-logr/zapr v1.3.0
-	github.com/google/go-cmp v0.6.0
+	github.com/google/go-cmp v0.7.0
 	github.com/google/go-containerregistry v0.20.3
 	github.com/jenkins-x/go-scm v1.14.56
 	github.com/onsi/gomega v1.36.2
