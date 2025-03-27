@@ -26,12 +26,13 @@ import (
 	"github.com/gitops-tools/gitopssets-controller/pkg/generators/matrix"
 	"github.com/gitops-tools/gitopssets-controller/pkg/generators/ocirepository"
 	"github.com/gitops-tools/gitopssets-controller/pkg/generators/pullrequests"
+	"github.com/gitops-tools/gitopssets-controller/pkg/generators/users"
 	"github.com/gitops-tools/gitopssets-controller/pkg/parser"
 	//+kubebuilder:scaffold:imports
 )
 
 // AllGenerators contains the name of all possible Generators.
-var AllGenerators = []string{"GitRepository", "OCIRepository", "Cluster", "PullRequests", "List", "APIClient", "ImagePolicy", "Matrix", "Config"}
+var AllGenerators = []string{"GitRepository", "OCIRepository", "Cluster", "PullRequests", "List", "APIClient", "ImagePolicy", "Matrix", "Config", "Users"}
 
 // DefaultGenerators contains the name of the default set of enabled Generators,
 // this leaves out generators that require optional dependencies.
@@ -80,7 +81,7 @@ func ValidateEnabledGenerators(enabledGenerators []string) error {
 
 // GetGenenerators returns a set of generator factories for the set of enabled
 // generators.
-func GetGenerators(enabledGenerators []string, fetcher parser.ArchiveFetcher, clientFactory apiclient.HTTPClientFactory) map[string]generators.GeneratorFactory {
+func GetGenerators(enabledGenerators []string, fetcher parser.ArchiveFetcher, clientFactory generators.HTTPClientFactory) map[string]generators.GeneratorFactory {
 	matrixGenerators := filterEnabledGenerators(enabledGenerators, map[string]generators.GeneratorFactory{
 		"List":          list.GeneratorFactory,
 		"GitRepository": gitrepository.GeneratorFactory(fetcher),
@@ -90,6 +91,7 @@ func GetGenerators(enabledGenerators []string, fetcher parser.ArchiveFetcher, cl
 		"ImagePolicy":   imagepolicy.GeneratorFactory,
 		"APIClient":     apiclient.GeneratorFactory(clientFactory),
 		"Config":        config.GeneratorFactory,
+		"Users":         users.GeneratorFactory(clientFactory),
 	})
 
 	return filterEnabledGenerators(enabledGenerators, map[string]generators.GeneratorFactory{
@@ -102,6 +104,7 @@ func GetGenerators(enabledGenerators []string, fetcher parser.ArchiveFetcher, cl
 		"ImagePolicy":   imagepolicy.GeneratorFactory,
 		"Matrix":        matrix.GeneratorFactory(matrixGenerators),
 		"Config":        config.GeneratorFactory,
+		"Users":         users.GeneratorFactory(clientFactory),
 	})
 }
 
