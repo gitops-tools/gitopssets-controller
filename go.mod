@@ -2,7 +2,7 @@ module github.com/gitops-tools/gitopssets-controller
 
 go 1.23.0
 
-toolchain go1.23.4
+toolchain go1.24.1
 
 require (
 	dario.cat/mergo v1.0.1
@@ -13,7 +13,7 @@ require (
 	github.com/fluxcd/pkg/apis/event v0.16.0
 	github.com/fluxcd/pkg/apis/meta v1.10.0
 	github.com/fluxcd/pkg/http/fetch v0.15.0
-	github.com/fluxcd/pkg/runtime v0.57.1
+	github.com/fluxcd/pkg/runtime v0.58.0
 	github.com/fluxcd/pkg/tar v0.11.0
 	github.com/fluxcd/source-controller/api v1.5.0
 	github.com/gitops-tools/pkg v0.2.0
