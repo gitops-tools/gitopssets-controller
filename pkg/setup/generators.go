@@ -36,7 +36,7 @@ var AllGenerators = []string{"GitRepository", "OCIRepository", "Cluster", "PullR
 
 // DefaultGenerators contains the name of the default set of enabled Generators,
 // this leaves out generators that require optional dependencies.
-var DefaultGenerators = []string{"GitRepository", "OCIRepository", "PullRequests", "List", "APIClient", "Matrix", "Config"}
+var DefaultGenerators = []string{"GitRepository", "OCIRepository", "PullRequests", "List", "APIClient", "Matrix", "Config", "Users"}
 
 // NewSchemeForGenerators creates and returns a runtime.Scheme configured with
 // the correct schemes for the enabled generators.
