@@ -13,11 +13,11 @@ import (
 type KeycloakUsersConfig struct {
 	// Enabled is used to filter only users who are enabled.
 	// +optional
-	Enabled *bool `json:"enabled"`
+	Enabled *bool `json:"enabled,omitempty"`
 
 	// EmailVerified is used to filter users with verified emails.
 	// +optional
-	EmailVerified *bool `json:"emailVerified"`
+	EmailVerified *bool `json:"emailVerified,omitempty"`
 
 	// Email filters users containing the string.
 	// The Exact option modifies the search.
@@ -50,7 +50,8 @@ type KeycloakUsersConfig struct {
 
 	// Exact controls whether or not the Email, LastName, FirstName and Username
 	// searches must match exactly.
-	Exact *bool `json:"exact"`
+	// +optional
+	Exact *bool `json:"exact,omitempty"`
 
 	// Limit the number of results in the query.
 	// +optional
@@ -123,7 +124,7 @@ func (k KeycloakUsersConfig) ToValues() url.Values {
 // users.
 type KeycloakUsersGeneration struct {
 	// This is the API endpoint to use.
-	// +kubebuilder:validation:Pattern="^https://"
+	// +kubebuilder:validation:Pattern="^(http|https)://.*$"
 	Endpoint string `json:"endpoint"`
 	// +required
 	SecretRef *LocalObjectReference `json:"secretRef,omitempty"`
