@@ -82,7 +82,7 @@ make run
 
 ## Contributing
 
-Feel free to open issues against this repository https://github.com/weaveworks/gitopssets-controller
+Feel free to open issues against this repository https://github.com/gitops-tools/gitopssets-controller
 
 ### How it works
 

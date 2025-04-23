@@ -612,7 +612,7 @@ spec:
                                     properties:
                                       endpoint:
                                         description: This is the API endpoint to use.
-                                        pattern: ^https://
+                                        pattern: ^(http|https)://.*$
                                         type: string
                                       queryConfig:
                                         description: Control the users that are queried
@@ -670,8 +670,6 @@ spec:
                                               Username filters users containing the string.
                                               The Exact option modifies the search.
                                             type: string
-                                        required:
-                                        - exact
                                         type: object
                                       secretRef:
                                         description: LocalObjectReference contains
@@ -813,7 +811,7 @@ spec:
                           properties:
                             endpoint:
                               description: This is the API endpoint to use.
-                              pattern: ^https://
+                              pattern: ^(http|https)://.*$
                               type: string
                             queryConfig:
                               description: Control the users that are queried from
@@ -870,8 +868,6 @@ spec:
                                     Username filters users containing the string.
                                     The Exact option modifies the search.
                                   type: string
-                              required:
-                              - exact
                               type: object
                             secretRef:
                               description: LocalObjectReference contains enough information

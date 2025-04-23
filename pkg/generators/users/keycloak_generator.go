@@ -11,6 +11,7 @@ import (
 	"strconv"
 
 	templatesv1 "github.com/gitops-tools/gitopssets-controller/api/v1alpha1"
+	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -79,7 +80,7 @@ func (k *UsersGenerator) generateKeycloakUsers(ctx context.Context, sg *template
 			query["first"] = []string{strconv.Itoa(pageNumber)}
 		}
 
-		result, err := getUsers(httpClient, sg.Users.Keycloak.Endpoint, authToken, query)
+		result, err := getUsers(ctx, k.Logger, httpClient, sg.Users.Keycloak.Endpoint, authToken, query)
 		if err != nil {
 			return nil, err
 		}
@@ -100,9 +101,11 @@ func (k *UsersGenerator) generateKeycloakUsers(ctx context.Context, sg *template
 	return combinedResult, nil
 }
 
-func getUsers(client *http.Client, endpoint, authToken string, query url.Values) ([]map[string]any, error) {
+func getUsers(ctx context.Context, logger logr.Logger, client *http.Client, endpoint, authToken string, query url.Values) ([]map[string]any, error) {
 	// TODO: Improve the URL generation
-	req, err := http.NewRequest(http.MethodGet, endpoint+"/users?"+query.Encode(), nil)
+	queryURL := endpoint + "/users?" + query.Encode()
+
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, queryURL, nil)
 	if err != nil {
 		// TODO: Improve error
 		return nil, err
@@ -114,13 +117,14 @@ func getUsers(client *http.Client, endpoint, authToken string, query url.Values)
 		return nil, fmt.Errorf("failed Keycloak HTTP request: %w", err)
 	}
 
-	if resp.StatusCode > http.StatusOK {
-		return nil, fmt.Errorf("invalid response from %s: %v", endpoint, resp.StatusCode)
-	}
-
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {
 		return nil, fmt.Errorf("reading response body: %w", err)
+	}
+
+	if resp.StatusCode > http.StatusOK {
+		logger.Info("invalid response from Keycloak", "status", resp.StatusCode, "queryURL", queryURL, "body", string(b))
+		return nil, fmt.Errorf("invalid response from %s: %v", endpoint, resp.StatusCode)
 	}
 
 	decoder := json.NewDecoder(bytes.NewReader(b))
