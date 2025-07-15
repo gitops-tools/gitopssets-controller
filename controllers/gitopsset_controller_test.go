@@ -191,7 +191,7 @@ func TestReconciliation(t *testing.T) {
 								"testing":         "newVersion",
 							}
 							ks.Spec.Path = "./templated/clusters/{{ .Element.cluster }}/"
-							ks.Spec.KubeConfig = &meta.KubeConfigReference{SecretRef: meta.SecretKeyReference{Name: "{{ .Element.cluster }}"}}
+							ks.Spec.KubeConfig = &meta.KubeConfigReference{SecretRef: &meta.SecretKeyReference{Name: "{{ .Element.cluster }}"}}
 							ks.Spec.Force = true
 						})),
 					},
@@ -317,7 +317,7 @@ func TestReconciliation(t *testing.T) {
 							"testing":         "newVersion",
 						}
 						ks.Spec.Path = "./templated/clusters/{{ .Element.cluster }}/"
-						ks.Spec.KubeConfig = &meta.KubeConfigReference{SecretRef: meta.SecretKeyReference{Name: "{{ .Element.cluster }}"}}
+						ks.Spec.KubeConfig = &meta.KubeConfigReference{SecretRef: &meta.SecretKeyReference{Name: "{{ .Element.cluster }}"}}
 						ks.Spec.Force = true
 					})),
 				},
@@ -339,7 +339,7 @@ func TestReconciliation(t *testing.T) {
 				"sets.gitops.pro/namespace": "default",
 			}
 			k.Spec.Path = "./templated/clusters/engineering-dev/"
-			k.Spec.KubeConfig = &meta.KubeConfigReference{SecretRef: meta.SecretKeyReference{Name: "engineering-dev"}}
+			k.Spec.KubeConfig = &meta.KubeConfigReference{SecretRef: &meta.SecretKeyReference{Name: "engineering-dev"}}
 			k.Spec.Force = true
 		})
 
@@ -487,7 +487,7 @@ func TestReconciliation(t *testing.T) {
 								"testing":         "newVersion",
 							}
 							ks.Spec.Path = "./templated/clusters/{{ .Element.cluster }}/"
-							ks.Spec.KubeConfig = &meta.KubeConfigReference{SecretRef: meta.SecretKeyReference{Name: "{{ .Element.cluster }}"}}
+							ks.Spec.KubeConfig = &meta.KubeConfigReference{SecretRef: &meta.SecretKeyReference{Name: "{{ .Element.cluster }}"}}
 							ks.Spec.Force = true
 						})),
 					},
@@ -780,7 +780,7 @@ func TestReconciliation(t *testing.T) {
 								"testing":         "newVersion",
 							}
 							ks.Spec.Path = "./templated/clusters/{{ .Element.cluster }}/"
-							ks.Spec.KubeConfig = &meta.KubeConfigReference{SecretRef: meta.SecretKeyReference{Name: "{{ .Element.cluster }}"}}
+							ks.Spec.KubeConfig = &meta.KubeConfigReference{SecretRef: &meta.SecretKeyReference{Name: "{{ .Element.cluster }}"}}
 							ks.Spec.Force = true
 						})),
 					},
@@ -1196,7 +1196,7 @@ func makeTestGitOpsSet(t *testing.T, opts ...func(*templatesv1.GitOpsSet)) *temp
 									Name: "demo-repo",
 								},
 								KubeConfig: &meta.KubeConfigReference{
-									SecretRef: meta.SecretKeyReference{
+									SecretRef: &meta.SecretKeyReference{
 										Name: "{{ .Element.cluster }}",
 									},
 								},
