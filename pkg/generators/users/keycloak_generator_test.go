@@ -31,23 +31,26 @@ func TestKeycloakUsersGeneration(t *testing.T) {
 	test.AssertNoError(t, err)
 	testcontainers.CleanupContainer(t, keycloakContainer)
 
-	token, err := keycloakContainer.GetBearerToken(ctx, "administrator", "secretpassword")
+	token, err := keycloakContainer.GetBearerToken(ctx, "master", "administrator", "secretpassword")
 	test.AssertNoError(t, err)
 	if token == "" {
 		t.Fatal("did not get a bearer token for communicating with Keycloak")
 	}
-	test.AssertNoError(t, keycloakContainer.EnableUnmanagedAttributes(ctx, token))
+	test.AssertNoError(t, keycloakContainer.EnableUnmanagedAttributes(ctx, "master", token))
 
-	_, err = keycloakContainer.CreateUser(ctx, token, keycloak.CreateUserRequest{
-		Username: "testing1", Enabled: false, Firstname: "User1", Lastname: "Tested",
-		Email: "testing1@example.com", EmailVerified: false,
+	_, err = keycloakContainer.CreateUser(ctx, "master", token, keycloak.UserRepresentation{
+		Username:  "testing1",
+		Firstname: "User1", Lastname: "Tested",
+		Email: "testing1@example.com",
 		Attributes: map[string][]string{
 			"testing": {"value1"},
 		}})
 	test.AssertNoError(t, err)
 
-	_, err = keycloakContainer.CreateUser(ctx, token, keycloak.CreateUserRequest{
-		Username: "testing2", Enabled: true, Firstname: "User2", Lastname: "Testing",
+	_, err = keycloakContainer.CreateUser(ctx, "master", token, keycloak.UserRepresentation{
+		Username:  "testing2",
+		Enabled:   true,
+		Firstname: "User2", Lastname: "Testing",
 		Email: "testing2@example.com", EmailVerified: true,
 		Attributes: map[string][]string{
 			"testing": {"value2"},
