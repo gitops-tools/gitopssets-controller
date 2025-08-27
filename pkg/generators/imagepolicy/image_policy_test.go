@@ -1,7 +1,6 @@
 package imagepolicy
 
 import (
-	"context"
 	"testing"
 
 	imagev1 "github.com/fluxcd/image-reflector-controller/api/v1beta2"
@@ -21,7 +20,7 @@ var _ generators.Generator = (*ImagePolicyGenerator)(nil)
 
 func TestGenerate_with_no_ImagePolicy(t *testing.T) {
 	gen := GeneratorFactory(logr.Discard(), nil)
-	got, err := gen.Generate(context.TODO(), &templatesv1.GitOpsSetGenerator{}, nil)
+	got, err := gen.Generate(t.Context(), &templatesv1.GitOpsSetGenerator{}, nil)
 
 	if err != nil {
 		t.Errorf("got an error with no ImagePolicy: %s", err)
@@ -75,7 +74,7 @@ func TestGenerate(t *testing.T) {
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
 			gen := NewGenerator(logr.Discard(), newFakeClient(t, tt.objects...))
-			got, err := gen.Generate(context.TODO(), &templatesv1.GitOpsSetGenerator{
+			got, err := gen.Generate(t.Context(), &templatesv1.GitOpsSetGenerator{
 				ImagePolicy: tt.generator,
 			},
 				&templatesv1.GitOpsSet{
@@ -149,7 +148,7 @@ func TestGenerate_errors(t *testing.T) {
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
 			gen := GeneratorFactory(logr.Discard(), newFakeClient(t, tt.objects...))
-			_, err := gen.Generate(context.TODO(), &templatesv1.GitOpsSetGenerator{
+			_, err := gen.Generate(t.Context(), &templatesv1.GitOpsSetGenerator{
 				ImagePolicy: tt.generator,
 			},
 				&templatesv1.GitOpsSet{

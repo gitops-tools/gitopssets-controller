@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"fmt"
 	"net/url"
 	"os"
@@ -38,7 +37,7 @@ func (p *ProxyArchiveFetcher) Fetch(archiveURL, checksum, dir string) error {
 	}
 
 	responseWrapper := p.Client.Services(parsed.namespace).ProxyGet(parsed.scheme, parsed.name, parsed.port, parsed.path, nil)
-	b, err := responseWrapper.DoRaw(context.TODO())
+	b, err := responseWrapper.DoRaw(t.Context())
 	if err != nil {
 		return err
 	}

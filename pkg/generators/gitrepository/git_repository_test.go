@@ -1,7 +1,6 @@
 package gitrepository
 
 import (
-	"context"
 	"testing"
 
 	"github.com/fluxcd/pkg/http/fetch"
@@ -27,7 +26,7 @@ var testFetcher = fetch.NewArchiveFetcher(testRetries, tar.UnlimitedUntarSize, t
 
 func TestGenerate_with_no_GitRepository(t *testing.T) {
 	gen := GeneratorFactory(testFetcher)(logr.Discard(), nil)
-	got, err := gen.Generate(context.TODO(), &templatesv1.GitOpsSetGenerator{}, nil)
+	got, err := gen.Generate(t.Context(), &templatesv1.GitOpsSetGenerator{}, nil)
 
 	if err != nil {
 		t.Errorf("got an error with no GitRepository: %s", err)
@@ -85,7 +84,7 @@ func TestGenerate(t *testing.T) {
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
 			gen := NewGenerator(logr.Discard(), newFakeClient(t, tt.objects...), testFetcher)
-			got, err := gen.Generate(context.TODO(), &templatesv1.GitOpsSetGenerator{
+			got, err := gen.Generate(t.Context(), &templatesv1.GitOpsSetGenerator{
 				GitRepository: tt.generator,
 			},
 				&templatesv1.GitOpsSet{
@@ -176,7 +175,7 @@ func TestGenerate_errors(t *testing.T) {
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
 			gen := GeneratorFactory(testFetcher)(logr.Discard(), newFakeClient(t, tt.objects...))
-			_, err := gen.Generate(context.TODO(), &templatesv1.GitOpsSetGenerator{
+			_, err := gen.Generate(t.Context(), &templatesv1.GitOpsSetGenerator{
 				GitRepository: tt.generator,
 			},
 				&templatesv1.GitOpsSet{
