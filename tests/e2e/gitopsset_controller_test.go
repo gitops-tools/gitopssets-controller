@@ -1,7 +1,6 @@
 package tests
 
 import (
-	"context"
 	"encoding/json"
 	"regexp"
 	"sort"
@@ -31,7 +30,7 @@ import (
 )
 
 func TestReconcilingNewCluster(t *testing.T) {
-	ctx := context.TODO()
+	ctx := t.Context()
 	// Create a new GitopsCluster object and ensure it is created
 	gc := makeTestGitopsCluster(nsn("default", "test-gc"), func(g *clustersv1.GitopsCluster) {
 		g.ObjectMeta.Labels = map[string]string{
@@ -117,7 +116,7 @@ func TestReconcilingNewCluster(t *testing.T) {
 }
 
 func TestReconcilingPartialApply(t *testing.T) {
-	ctx := context.TODO()
+	ctx := t.Context()
 
 	prodCM := test.NewConfigMap(func(c *corev1.ConfigMap) {
 		c.SetName("engineering-prod-cm")
@@ -181,7 +180,7 @@ func TestReconcilingPartialApply(t *testing.T) {
 }
 
 func TestGenerateNamespace(t *testing.T) {
-	ctx := context.TODO()
+	ctx := t.Context()
 
 	gs := &templatesv1.GitOpsSet{
 		ObjectMeta: metav1.ObjectMeta{
@@ -227,7 +226,7 @@ func TestGenerateNamespace(t *testing.T) {
 }
 
 func TestReconcilingWithAnnotationChange(t *testing.T) {
-	ctx := context.TODO()
+	ctx := t.Context()
 	gs := &templatesv1.GitOpsSet{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "demo-set",
@@ -294,7 +293,7 @@ func TestReconcilingWithAnnotationChange(t *testing.T) {
 }
 
 func TestReconcilingUpdatingImagePolicy(t *testing.T) {
-	ctx := context.TODO()
+	ctx := t.Context()
 	ip := test.NewImagePolicy()
 
 	test.AssertNoError(t, testEnv.Create(ctx, test.ToUnstructured(t, ip)))
@@ -354,7 +353,7 @@ func TestReconcilingUpdatingImagePolicy(t *testing.T) {
 }
 
 func TestReconcilingUpdatingImagePolicy_in_matrix(t *testing.T) {
-	ctx := context.TODO()
+	ctx := t.Context()
 	ip := test.NewImagePolicy()
 
 	test.AssertNoError(t, testEnv.Create(ctx, test.ToUnstructured(t, ip)))
@@ -426,7 +425,7 @@ func TestReconcilingUpdatingImagePolicy_in_matrix(t *testing.T) {
 
 func TestGitOpsSetUpdateOnGitRepoChange(t *testing.T) {
 	eventRecorder.Reset()
-	ctx := context.TODO()
+	ctx := t.Context()
 
 	// Create a GitRepository with a fake archive server.
 	srv := test.StartFakeArchiveServer(t, "testdata/archive")
@@ -491,7 +490,7 @@ func TestGitOpsSetUpdateOnGitRepoChange(t *testing.T) {
 
 func TestGitOpsSetUpdateOnOCIRepoChange(t *testing.T) {
 	eventRecorder.Reset()
-	ctx := context.TODO()
+	ctx := t.Context()
 
 	// Create an OCIRepository with a fake archive server.
 	srv := test.StartFakeArchiveServer(t, "testdata/archive")
@@ -556,7 +555,7 @@ func TestGitOpsSetUpdateOnOCIRepoChange(t *testing.T) {
 }
 
 func TestReconcilingUpdatingConfigMap(t *testing.T) {
-	ctx := context.TODO()
+	ctx := t.Context()
 	src := test.NewConfigMap(func(cm *corev1.ConfigMap) {
 		cm.ObjectMeta.Name = "test-cm"
 		cm.Data = map[string]string{
@@ -611,7 +610,7 @@ func TestReconcilingUpdatingConfigMap(t *testing.T) {
 }
 
 func TestReconcilingUpdatingConfigMap_in_matrix(t *testing.T) {
-	ctx := context.TODO()
+	ctx := t.Context()
 	src := test.NewConfigMap(func(cm *corev1.ConfigMap) {
 		cm.ObjectMeta.Name = "test-cm"
 		cm.Data = map[string]string{
@@ -681,7 +680,7 @@ func TestReconcilingUpdatingConfigMap_in_matrix(t *testing.T) {
 }
 
 func TestReconcilingUpdatingSecret(t *testing.T) {
-	ctx := context.TODO()
+	ctx := t.Context()
 	src := test.NewSecret(func(s *corev1.Secret) {
 		s.ObjectMeta.Name = "test-secret"
 		s.Data = map[string][]byte{
@@ -736,7 +735,7 @@ func TestReconcilingUpdatingSecret(t *testing.T) {
 }
 
 func TestReconcilingUpdatingSecret_in_matrix(t *testing.T) {
-	ctx := context.TODO()
+	ctx := t.Context()
 	src := test.NewConfigMap(func(cm *corev1.ConfigMap) {
 		cm.ObjectMeta.Name = "test-cm"
 		cm.Data = map[string]string{
@@ -831,7 +830,7 @@ func waitForGitOpsSetInventory(t *testing.T, k8sClient client.Client, gs *templa
 	g := gomega.NewWithT(t)
 	g.Eventually(func() bool {
 		updated := &templatesv1.GitOpsSet{}
-		if err := k8sClient.Get(context.TODO(), client.ObjectKeyFromObject(gs), updated); err != nil {
+		if err := k8sClient.Get(t.Context(), client.ObjectKeyFromObject(gs), updated); err != nil {
 			return false
 		}
 
@@ -854,7 +853,7 @@ func waitForGitOpsSetCondition(t *testing.T, k8sClient client.Client, gs *templa
 	g := gomega.NewWithT(t)
 	g.Eventually(func() bool {
 		updated := &templatesv1.GitOpsSet{}
-		if err := k8sClient.Get(context.TODO(), client.ObjectKeyFromObject(gs), updated); err != nil {
+		if err := k8sClient.Get(t.Context(), client.ObjectKeyFromObject(gs), updated); err != nil {
 			return false
 		}
 		cond := apimeta.FindStatusCondition(updated.Status.Conditions, meta.ReadyCondition)
@@ -902,7 +901,7 @@ func newArtifact(url, checksum string) *sourcev1.Artifact {
 
 func TestEventsWithReconciling(t *testing.T) {
 	eventRecorder.Reset()
-	ctx := context.TODO()
+	ctx := t.Context()
 
 	// Create a new GitopsCluster object and ensure it is created
 	gc := makeTestGitopsCluster(nsn("default", "test-gc"), func(g *clustersv1.GitopsCluster) {
@@ -971,7 +970,7 @@ func TestEventsWithReconciling(t *testing.T) {
 
 func TestEventsWithFailingReconciling(t *testing.T) {
 	eventRecorder.Reset()
-	ctx := context.TODO()
+	ctx := t.Context()
 
 	prodCM := test.NewConfigMap(func(c *corev1.ConfigMap) {
 		c.SetName("engineering-prod-cm")
@@ -1043,7 +1042,7 @@ func deleteGitOpsSetAndWaitForNotFound(t *testing.T, cl client.Client, gs *templ
 
 func deleteObject(t *testing.T, cl client.Client, obj client.Object) {
 	t.Helper()
-	if err := cl.Delete(context.TODO(), obj); err != nil {
+	if err := cl.Delete(t.Context(), obj); err != nil {
 		t.Fatal(err)
 	}
 }

@@ -1,7 +1,6 @@
 package cluster
 
 import (
-	"context"
 	"testing"
 
 	"github.com/go-logr/logr"
@@ -122,7 +121,7 @@ func TestClusterGenerator_Generate(t *testing.T) {
 			c := newFakeClient(t, tt.clusters...)
 			g := NewGenerator(logr.Discard(), c)
 
-			gotParams, err := g.Generate(context.TODO(), tt.sg, nil)
+			gotParams, err := g.Generate(t.Context(), tt.sg, nil)
 
 			if tt.errContains != "" {
 				assert.Contains(t, err.Error(), tt.errContains)

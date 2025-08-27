@@ -2,7 +2,6 @@ package templates
 
 import (
 	"bytes"
-	"context"
 	"encoding/json"
 	"os"
 	"testing"
@@ -501,7 +500,7 @@ func TestRender(t *testing.T) {
 	for _, tt := range generatorTests {
 		t.Run(tt.name, func(t *testing.T) {
 			gset := makeTestGitOpsSet(t, append(tt.setOptions, listElements(tt.elements))...)
-			objs, err := Render(context.TODO(), gset, testGenerators)
+			objs, err := Render(t.Context(), gset, testGenerators)
 			test.AssertNoError(t, err)
 
 			if diff := cmp.Diff(tt.want, objs); diff != "" {
@@ -537,7 +536,7 @@ func TestRender_files(t *testing.T) {
 	for _, tt := range generatorTests {
 		t.Run(tt.filename, func(t *testing.T) {
 			gset := readFixtureAsGitOpsSet(t, tt.filename)
-			objs, err := Render(context.TODO(), gset, testGenerators)
+			objs, err := Render(t.Context(), gset, testGenerators)
 			test.AssertNoError(t, err)
 
 			assertFixturesMatch(t, tt.want, objs)
@@ -608,7 +607,7 @@ func TestRender_errors(t *testing.T) {
 	for _, tt := range templateTests {
 		t.Run(tt.name, func(t *testing.T) {
 			gset := makeTestGitOpsSet(t, tt.setOptions...)
-			_, err := Render(context.TODO(), gset, testGenerators)
+			_, err := Render(t.Context(), gset, testGenerators)
 
 			test.AssertErrorMatch(t, tt.wantErr, err)
 		})
@@ -619,7 +618,7 @@ func TestRender_disabled(t *testing.T) {
 	gset := makeTestGitOpsSet(t)
 	// no generators available
 	testGenerators := map[string]generators.Generator{}
-	res, err := Render(context.TODO(), gset, testGenerators)
+	res, err := Render(t.Context(), gset, testGenerators)
 	test.AssertNoError(t, err)
 	if cmp.Diff([]*unstructured.Unstructured{}, res) != "" {
 		t.Fatalf("expected no resources to be rendered")

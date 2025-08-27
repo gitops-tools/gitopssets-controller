@@ -1,7 +1,6 @@
 package matrix
 
 import (
-	"context"
 	"testing"
 	"time"
 
@@ -333,7 +332,7 @@ func TestMatrixGenerator_Generate(t *testing.T) {
 				"List":          list.GeneratorFactory,
 				"GitRepository": gitrepository.GeneratorFactory(fetch.NewArchiveFetcher(1, tar.UnlimitedUntarSize, tar.UnlimitedUntarSize, "")),
 			})
-			matrix, err := g.Generate(context.TODO(), tt.sg, tt.ks)
+			matrix, err := g.Generate(t.Context(), tt.sg, tt.ks)
 			test.AssertErrorMatch(t, tt.expectedErrorStr, err)
 
 			if diff := cmp.Diff(tt.expectedMatrix, matrix); diff != "" {
@@ -376,7 +375,7 @@ func TestDisabledGenerators(t *testing.T) {
 		},
 	}
 
-	_, err := gen.Generate(context.TODO(), sg, ks)
+	_, err := gen.Generate(t.Context(), sg, ks)
 	test.AssertErrorMatch(t, `generator GitRepository not enabled`, err)
 }
 

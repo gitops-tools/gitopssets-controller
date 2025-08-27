@@ -1,7 +1,6 @@
 package config
 
 import (
-	"context"
 	"testing"
 
 	"github.com/go-logr/logr"
@@ -21,7 +20,7 @@ import (
 
 func TestGenerate_with_no_Config(t *testing.T) {
 	gen := GeneratorFactory(logr.Discard(), nil)
-	got, err := gen.Generate(context.TODO(), &templatesv1.GitOpsSetGenerator{}, nil)
+	got, err := gen.Generate(t.Context(), &templatesv1.GitOpsSetGenerator{}, nil)
 
 	if err != nil {
 		t.Errorf("got an error with no Config: %s", err)
@@ -88,7 +87,7 @@ func TestConfigGenerator_Generate_with_errors(t *testing.T) {
 			c := newFakeClient(t, tt.objects...)
 			g := NewGenerator(logr.Discard(), c)
 
-			_, err := g.Generate(context.TODO(), tt.sg, &templatesv1.GitOpsSet{
+			_, err := g.Generate(t.Context(), tt.sg, &templatesv1.GitOpsSet{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "demo-set",
 					Namespace: "testing",
@@ -163,7 +162,7 @@ func TestConfigGenerator_Generate(t *testing.T) {
 			c := newFakeClient(t, tt.objects...)
 			g := NewGenerator(logr.Discard(), c)
 
-			params, err := g.Generate(context.TODO(), tt.sg, &templatesv1.GitOpsSet{
+			params, err := g.Generate(t.Context(), tt.sg, &templatesv1.GitOpsSet{
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      "demo-set",
 					Namespace: "testing",
