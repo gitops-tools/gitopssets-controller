@@ -1,8 +1,6 @@
 module github.com/gitops-tools/gitopssets-controller
 
-go 1.24.0
-
-toolchain go1.24.2
+go 1.25.0
 
 require (
 	dario.cat/mergo v1.0.2
@@ -11,7 +9,7 @@ require (
 	github.com/fluxcd/image-reflector-controller/api v0.35.2
 	github.com/fluxcd/kustomize-controller/api v1.6.1
 	github.com/fluxcd/pkg/apis/event v0.18.0
-	github.com/fluxcd/pkg/apis/meta v1.18.0
+	github.com/fluxcd/pkg/apis/meta v1.20.0
 	github.com/fluxcd/pkg/http/fetch v0.18.0
 	github.com/fluxcd/pkg/runtime v0.80.0
 	github.com/fluxcd/pkg/tar v0.13.0
