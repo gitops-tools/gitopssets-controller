@@ -63,8 +63,8 @@ github.com/fluxcd/pkg/apis/meta v1.21.0 h1:R+bN02chcs0HUmyVDQhqe/FHmYLjipVDMLnyY
 github.com/fluxcd/pkg/apis/meta v1.21.0/go.mod h1:XUAEUgT4gkWDAEN79E141tmL+v4SV50tVZ/Ojpc/ueg=
 github.com/fluxcd/pkg/http/fetch v0.19.0 h1:dRdErv8X2t/VKnh5kFRZrlqKzbq9Gh0n/z3XArjdLho=
 github.com/fluxcd/pkg/http/fetch v0.19.0/go.mod h1:z32w8nezoBvQfMogCkhAoqKToOZzPSbIW0PeN2fKXqA=
-github.com/fluxcd/pkg/runtime v0.83.0 h1:XzpwKzo7GqfBE/BKpxG5B4U7cUnojnB407S9Dpp6oLU=
-github.com/fluxcd/pkg/runtime v0.83.0/go.mod h1:r8KLvXRguKtpLAa66fA19rIbwPViXm8az038IUabYvw=
+github.com/fluxcd/pkg/runtime v0.84.0 h1:3M+egIQwQU9YYjKQkczyawG+9RUOkGtkDMQlePnEeTM=
+github.com/fluxcd/pkg/runtime v0.84.0/go.mod h1:Wt9mUzQgMPQMu2D/wKl5pG4zh5vu/tfF5wq9pPobxOQ=
 github.com/fluxcd/pkg/tar v0.14.0 h1:9Gku8FIvPt2bixKldZnzXJ/t+7SloxePlzyVGOK8GVQ=
 github.com/fluxcd/pkg/tar v0.14.0/go.mod h1:+rOWYk93qLEJ8WwmkvJOkB8i0dna1mrwJFybE8i9Udo=
 github.com/fluxcd/pkg/testserver v0.13.0 h1:xEpBcEYtD7bwvZ+i0ZmChxKkDo/wfQEV3xmnzVybSSg=
@@ -342,8 +342,8 @@ k8s.io/utils v0.0.0-20250604170112-4c0f3b243397 h1:hwvWFiBzdWw1FhfY1FooPn3kzWuJ8
 k8s.io/utils v0.0.0-20250604170112-4c0f3b243397/go.mod h1:OLgZIPagt7ERELqWJFomSt595RzquPNLL48iOWgYOg0=
 sigs.k8s.io/cli-utils v0.37.2 h1:GOfKw5RV2HDQZDJlru5KkfLO1tbxqMoyn1IYUxqBpNg=
 sigs.k8s.io/cli-utils v0.37.2/go.mod h1:V+IZZr4UoGj7gMJXklWBg6t5xbdThFBcpj4MrZuCYco=
-sigs.k8s.io/controller-runtime v0.22.0 h1:mTOfibb8Hxwpx3xEkR56i7xSjB+nH4hZG37SrlCY5e0=
-sigs.k8s.io/controller-runtime v0.22.0/go.mod h1:FwiwRjkRPbiN+zp2QRp7wlTCzbUXxZ/D4OzuQUDwBHY=
+sigs.k8s.io/controller-runtime v0.22.1 h1:Ah1T7I+0A7ize291nJZdS1CabF/lB4E++WizgV24Eqg=
+sigs.k8s.io/controller-runtime v0.22.1/go.mod h1:FwiwRjkRPbiN+zp2QRp7wlTCzbUXxZ/D4OzuQUDwBHY=
 sigs.k8s.io/json v0.0.0-20241014173422-cfa47c3a1cc8 h1:gBQPwqORJ8d8/YNZWEjoZs7npUVDpVXUUOFfW6CgAqE=
 sigs.k8s.io/json v0.0.0-20241014173422-cfa47c3a1cc8/go.mod h1:mdzfpAEoE6DHQEN0uh9ZbOCuHbLK5wOm7dK4ctXE9Tg=
 sigs.k8s.io/kustomize/api v0.20.1 h1:iWP1Ydh3/lmldBnH/S5RXgT98vWYMaTUL1ADcr+Sv7I=
