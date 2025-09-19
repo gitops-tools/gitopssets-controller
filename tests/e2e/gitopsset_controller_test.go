@@ -6,7 +6,7 @@ import (
 	"sort"
 	"testing"
 
-	imagev1 "github.com/fluxcd/image-reflector-controller/api/v1beta2"
+	imagev1 "github.com/fluxcd/image-reflector-controller/api/v1"
 	kustomizev1 "github.com/fluxcd/kustomize-controller/api/v1beta2"
 	"github.com/fluxcd/pkg/apis/meta"
 	sourcev1 "github.com/fluxcd/source-controller/api/v1"
@@ -300,7 +300,10 @@ func TestReconcilingUpdatingImagePolicy(t *testing.T) {
 	defer deleteObject(t, testEnv, ip)
 
 	ip = waitForResource[*imagev1.ImagePolicy](t, testEnv, ip)
-	ip.Status.LatestImage = "testing/test:v0.30.0"
+	ip.Status.LatestRef = &imagev1.ImageRef{
+		Name: "testing/test",
+		Tag:  "v0.30.0",
+	}
 	test.AssertNoError(t, testEnv.Status().Update(ctx, ip))
 
 	gs := &templatesv1.GitOpsSet{
@@ -336,7 +339,10 @@ func TestReconcilingUpdatingImagePolicy(t *testing.T) {
 	defer deleteGitOpsSetAndWaitForNotFound(t, testEnv, gs)
 
 	ip = waitForResource[*imagev1.ImagePolicy](t, testEnv, ip)
-	ip.Status.LatestImage = "testing/test:v0.31.0"
+	ip.Status.LatestRef = &imagev1.ImageRef{
+		Name: "testing/test",
+		Tag:  "v0.31.0",
+	}
 	test.AssertNoError(t, testEnv.Status().Update(ctx, ip))
 
 	waitForGitOpsSetCondition(t, testEnv, gs, "1 resources created")
@@ -360,7 +366,10 @@ func TestReconcilingUpdatingImagePolicy_in_matrix(t *testing.T) {
 	defer deleteObject(t, testEnv, ip)
 
 	test.AssertNoError(t, testEnv.Get(ctx, client.ObjectKeyFromObject(ip), ip))
-	ip.Status.LatestImage = "testing/test:v0.30.0"
+	ip.Status.LatestRef = &imagev1.ImageRef{
+		Name: "testing/test",
+		Tag:  "v0.30.0",
+	}
 	test.AssertNoError(t, testEnv.Status().Update(ctx, ip))
 
 	gs := &templatesv1.GitOpsSet{
