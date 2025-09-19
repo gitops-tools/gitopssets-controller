@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	imagev1 "github.com/fluxcd/image-reflector-controller/api/v1beta2"
+	imagev1 "github.com/fluxcd/image-reflector-controller/api/v1"
 	kustomizev1 "github.com/fluxcd/kustomize-controller/api/v1beta2"
 	"github.com/fluxcd/pkg/http/fetch"
 	"github.com/fluxcd/pkg/runtime/testenv"

@@ -3,7 +3,7 @@ package imagepolicy
 import (
 	"testing"
 
-	imagev1 "github.com/fluxcd/image-reflector-controller/api/v1beta2"
+	imagev1 "github.com/fluxcd/image-reflector-controller/api/v1"
 	"github.com/go-logr/logr"
 	"github.com/google/go-cmp/cmp"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -42,7 +42,7 @@ func TestGenerate(t *testing.T) {
 			&templatesv1.ImagePolicyGenerator{
 				PolicyRef: "test-policy",
 			},
-			[]runtime.Object{test.NewImagePolicy(withImages("ghcr.io/testing/test:v0.30.0", "ghcr.io/testing/test:v0.29.0"))},
+			[]runtime.Object{test.NewImagePolicy(withImages("ghcr.io/testing/test", "v0.30.0", "ghcr.io/testing/test", "v0.29.0"))},
 			[]map[string]any{
 				{
 					"image":         "ghcr.io/testing/test",
@@ -58,7 +58,7 @@ func TestGenerate(t *testing.T) {
 			&templatesv1.ImagePolicyGenerator{
 				PolicyRef: "test-policy",
 			},
-			[]runtime.Object{test.NewImagePolicy(withImages("ghcr.io/testing/test:v0.30.0", ""))},
+			[]runtime.Object{test.NewImagePolicy(withImages("ghcr.io/testing/test", "v0.30.0", "", ""))},
 			[]map[string]any{
 				{
 					"image":         "ghcr.io/testing/test",
@@ -140,8 +140,8 @@ func TestGenerate_errors(t *testing.T) {
 			generator: &templatesv1.ImagePolicyGenerator{
 				PolicyRef: "test-policy",
 			},
-			objects: []runtime.Object{test.NewImagePolicy(withImages("testing/test::", "testing/test:v0.29.0"))},
-			wantErr: "repository can only contain the characters `abcdefghijklmnopqrstuvwxyz0123456789_-.",
+			objects: []runtime.Object{test.NewImagePolicy(withImages("testing/test", ":", "testing/test", "v0.29.0"))},
+			wantErr: "must specify a tag name after the colon",
 		},
 	}
 
@@ -170,10 +170,20 @@ func TestGenerate_errors(t *testing.T) {
 	}
 }
 
-func withImages(latestImage, previousImage string) func(*imagev1.ImagePolicy) {
+func withImages(latestName, latestTag, previousName, previousTag string) func(*imagev1.ImagePolicy) {
 	return func(ip *imagev1.ImagePolicy) {
-		ip.Status.LatestImage = latestImage
-		ip.Status.ObservedPreviousImage = previousImage
+		if latestName != "" && latestTag != "" {
+			ip.Status.LatestRef = &imagev1.ImageRef{
+				Name: latestName,
+				Tag:  latestTag,
+			}
+		}
+		if previousName != "" && previousTag != "" {
+			ip.Status.ObservedPreviousRef = &imagev1.ImageRef{
+				Name: previousName,
+				Tag:  previousTag,
+			}
+		}
 	}
 }
 
