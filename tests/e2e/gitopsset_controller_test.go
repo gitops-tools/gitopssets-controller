@@ -9,7 +9,6 @@ import (
 	imagev1 "github.com/fluxcd/image-reflector-controller/api/v1"
 	kustomizev1 "github.com/fluxcd/kustomize-controller/api/v1beta2"
 	"github.com/fluxcd/pkg/apis/meta"
-	sourcev1 "github.com/fluxcd/source-controller/api/v1"
 	sourcev1beta2 "github.com/fluxcd/source-controller/api/v1beta2"
 	"github.com/google/go-cmp/cmp"
 	"github.com/google/go-cmp/cmp/cmpopts"
@@ -900,8 +899,8 @@ func generateResourceInventory(objs []runtime.Object) *templatesv1.ResourceInven
 	return &templatesv1.ResourceInventory{Entries: entries}
 }
 
-func newArtifact(url, checksum string) *sourcev1.Artifact {
-	return &sourcev1.Artifact{
+func newArtifact(url, checksum string) *meta.Artifact {
+	return &meta.Artifact{
 		URL:            url,
 		Digest:         checksum,
 		LastUpdateTime: metav1.Now(),
