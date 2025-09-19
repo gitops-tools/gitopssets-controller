@@ -4,9 +4,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/fluxcd/pkg/apis/meta"
 	"github.com/fluxcd/pkg/http/fetch"
 	"github.com/fluxcd/pkg/tar"
-	sourcev1 "github.com/fluxcd/source-controller/api/v1"
 	sourcev1beta2 "github.com/fluxcd/source-controller/api/v1beta2"
 	templatesv1 "github.com/gitops-tools/gitopssets-controller/api/v1alpha1"
 	"github.com/gitops-tools/gitopssets-controller/pkg/generators"
@@ -554,7 +554,7 @@ func newGitRepository(archiveURL, xsum string) *sourcev1beta2.GitRepository {
 			Namespace: testNamespace,
 		},
 		Status: sourcev1beta2.GitRepositoryStatus{
-			Artifact: &sourcev1.Artifact{
+			Artifact: &meta.Artifact{
 				URL:    archiveURL,
 				Digest: xsum,
 			},

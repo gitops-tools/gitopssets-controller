@@ -3,6 +3,7 @@ package gitrepository
 import (
 	"testing"
 
+	"github.com/fluxcd/pkg/apis/meta"
 	"github.com/fluxcd/pkg/http/fetch"
 	"github.com/fluxcd/pkg/tar"
 	sourcev1 "github.com/fluxcd/source-controller/api/v1"
@@ -199,7 +200,7 @@ func TestGenerate_errors(t *testing.T) {
 
 func withArchiveURLAndChecksum(archiveURL, xsum string) func(*sourcev1.GitRepository) {
 	return func(gr *sourcev1.GitRepository) {
-		gr.Status.Artifact = &sourcev1.Artifact{
+		gr.Status.Artifact = &meta.Artifact{
 			URL:    archiveURL,
 			Digest: xsum,
 		}

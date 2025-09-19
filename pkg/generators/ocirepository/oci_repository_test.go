@@ -3,9 +3,9 @@ package ocirepository
 import (
 	"testing"
 
+	"github.com/fluxcd/pkg/apis/meta"
 	"github.com/fluxcd/pkg/http/fetch"
 	"github.com/fluxcd/pkg/tar"
-	sourcev1 "github.com/fluxcd/source-controller/api/v1"
 	sourcev1beta2 "github.com/fluxcd/source-controller/api/v1beta2"
 	"github.com/go-logr/logr"
 	"github.com/google/go-cmp/cmp"
@@ -200,7 +200,7 @@ func TestGenerate_errors(t *testing.T) {
 
 func withArchiveURLAndChecksum(archiveURL, xsum string) func(*sourcev1beta2.OCIRepository) {
 	return func(gr *sourcev1beta2.OCIRepository) {
-		gr.Status.Artifact = &sourcev1.Artifact{
+		gr.Status.Artifact = &meta.Artifact{
 			URL:    archiveURL,
 			Digest: xsum,
 		}

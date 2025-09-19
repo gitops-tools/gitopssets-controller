@@ -9,8 +9,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/fluxcd/pkg/apis/meta"
 	sourcev1 "github.com/fluxcd/source-controller/api/v1"
-	sourcev1beta2 "github.com/fluxcd/source-controller/api/v1beta2"
 	"github.com/go-logr/logr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -93,16 +93,12 @@ func (l localObjectReader) Get(ctx context.Context, key client.ObjectKey, obj cl
 	l.logger.Info("reading from local filesystem", "base", base)
 
 	switch v := obj.(type) {
-	case *sourcev1beta2.GitRepository:
-		v.Status.Artifact = &sourcev1.Artifact{
-			URL: "file://" + filepath.Join(base, key.Name),
-		}
 	case *sourcev1.GitRepository:
-		v.Status.Artifact = &sourcev1.Artifact{
+		v.Status.Artifact = &meta.Artifact{
 			URL: "file://" + filepath.Join(base, key.Name),
 		}
-	case *sourcev1beta2.OCIRepository:
-		v.Status.Artifact = &sourcev1.Artifact{
+	case *sourcev1.OCIRepository:
+		v.Status.Artifact = &meta.Artifact{
 			URL: "file://" + filepath.Join(base, key.Name),
 		}
 
