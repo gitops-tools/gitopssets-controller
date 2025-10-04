@@ -15,7 +15,6 @@ import (
 	"github.com/fluxcd/pkg/runtime/logger"
 	"github.com/fluxcd/pkg/runtime/metrics"
 	"github.com/fluxcd/pkg/runtime/pprof"
-	"github.com/fluxcd/pkg/tar"
 	"github.com/gitops-tools/gitopssets-controller/pkg/generators/apiclient"
 	"github.com/gitops-tools/gitopssets-controller/pkg/setup"
 	flag "github.com/spf13/pflag"
@@ -42,15 +41,17 @@ const (
 
 func main() {
 	var (
-		metricsAddr           string
-		enableLeaderElection  bool
-		probeAddr             string
-		watchAllNamespaces    bool
-		defaultServiceAccount string
-		enabledGenerators     []string
-		clientOptions         runtimeclient.Options
-		logOptions            logger.Options
-		eventsAddr            string
+		metricsAddr            string
+		enableLeaderElection   bool
+		probeAddr              string
+		watchAllNamespaces     bool
+		defaultServiceAccount  string
+		enabledGenerators      []string
+		clientOptions          runtimeclient.Options
+		logOptions             logger.Options
+		eventsAddr             string
+		maxArchiveDownloadSize int64
+		maxArchiveUntarSize    int64
 	)
 
 	flag.StringVar(&metricsAddr, "metrics-bind-address", ":8080", "The address the metric endpoint binds to.")
@@ -63,6 +64,10 @@ func main() {
 		"Watch for custom resources in all namespaces, if set to false it will only watch the runtime namespace.")
 	flag.StringVar(&defaultServiceAccount, "default-service-account", "", "Default service account used for impersonation.")
 	flag.StringSliceVar(&enabledGenerators, "enabled-generators", setup.DefaultGenerators, "Generators to enable.")
+	// Security hardening: place sane defaults for archive sizes to avoid zip-bombs and excessive memory/disk usage.
+	// Defaults: 100MiB for download and 200MiB for untarred content. Can be adjusted via flags.
+	flag.Int64Var(&maxArchiveDownloadSize, "max-archive-download-size", 100*1024*1024, "Maximum size in bytes for downloaded generator archives (default 100MiB).")
+	flag.Int64Var(&maxArchiveUntarSize, "max-archive-untar-size", 200*1024*1024, "Maximum total size in bytes for extracted generator archives (default 200MiB).")
 
 	logOptions.BindFlags(flag.CommandLine)
 	clientOptions.BindFlags(flag.CommandLine)
@@ -156,7 +161,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	fetcher := fetch.NewArchiveFetcher(retries, tar.UnlimitedUntarSize, tar.UnlimitedUntarSize, "")
+	// Use bounded archive fetcher to mitigate resource exhaustion.
+	// If you need larger limits, override with flags above.
+	ua := "gitopssets-controller/" + Version
+	fetcher := fetch.NewArchiveFetcher(retries, int(maxArchiveDownloadSize), int(maxArchiveUntarSize), ua)
 
 	if err = (&controllers.GitOpsSetReconciler{
 		Client:                mgr.GetClient(),
