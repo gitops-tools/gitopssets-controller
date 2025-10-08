@@ -10,9 +10,9 @@ require (
 	github.com/fluxcd/kustomize-controller/api v1.7.0
 	github.com/fluxcd/pkg/apis/event v0.19.0
 	github.com/fluxcd/pkg/apis/meta v1.21.0
-	github.com/fluxcd/pkg/http/fetch v0.19.0
+	github.com/fluxcd/pkg/http/fetch v0.20.0
 	github.com/fluxcd/pkg/runtime v0.86.0
-	github.com/fluxcd/pkg/tar v0.14.0
+	github.com/fluxcd/pkg/tar v0.15.0
 	github.com/fluxcd/source-controller/api v1.7.0
 	github.com/gitops-tools/pkg v0.2.0
 	github.com/go-logr/logr v1.4.3
@@ -109,7 +109,7 @@ require (
 	go.yaml.in/yaml/v2 v2.4.2 // indirect
 	go.yaml.in/yaml/v3 v3.0.4 // indirect
 	golang.org/x/crypto v0.42.0 // indirect
-	golang.org/x/net v0.44.0 // indirect
+	golang.org/x/net v0.45.0 // indirect
 	golang.org/x/oauth2 v0.31.0 // indirect
 	golang.org/x/sync v0.17.0 // indirect
 	golang.org/x/sys v0.36.0 // indirect
