@@ -69,8 +69,8 @@ github.com/fluxcd/pkg/tar v0.15.0 h1:xoMLngTahZ0/j3CgM/9sLw1F0PkDwiZCRbu6hYxx0Gw
 github.com/fluxcd/pkg/tar v0.15.0/go.mod h1:54zTMvJG+aWdoLcuhD2plTVODgxl5/w+mnoDVCcU34Y=
 github.com/fluxcd/pkg/testserver v0.13.0 h1:xEpBcEYtD7bwvZ+i0ZmChxKkDo/wfQEV3xmnzVybSSg=
 github.com/fluxcd/pkg/testserver v0.13.0/go.mod h1:akRYv3FLQUsme15na9ihECRG6hBuqni4XEY9W8kzs8E=
-github.com/fluxcd/source-controller/api v1.7.2 h1:/lg/xoyRjxwdhHKqjTxQS2o1cp+DMKJ8W4rpm+ZLemQ=
-github.com/fluxcd/source-controller/api v1.7.2/go.mod h1:2JtCeUVpl0aqKImS19jUz9EEnMdzgqNWHkllrIhV004=
+github.com/fluxcd/source-controller/api v1.7.3 h1:JCDbaJqAbQtjCt3Ijsm/6nZf+SZiby3/R6lVZ1gDllE=
+github.com/fluxcd/source-controller/api v1.7.3/go.mod h1:2JtCeUVpl0aqKImS19jUz9EEnMdzgqNWHkllrIhV004=
 github.com/frankban/quicktest v1.14.6 h1:7Xjx+VpznH+oBnejlPUj8oUpdxnVs4f8XU8WnHkI4W8=
 github.com/frankban/quicktest v1.14.6/go.mod h1:4ptaffx2x8+WTWXmUCuVU6aPUX1/Mz7zb5vbUoiM6w0=
 github.com/fsnotify/fsnotify v1.9.0 h1:2Ml+OJNzbYCTzsxtv8vKSFD9PbJjmhYF14k/jKC7S9k=
