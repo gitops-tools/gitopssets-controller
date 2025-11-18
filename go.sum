@@ -65,8 +65,8 @@ github.com/fluxcd/pkg/http/fetch v0.20.0 h1:/Lvcu1JzABBLuQYuLKYh1K02a+RqbP4b5wIZ
 github.com/fluxcd/pkg/http/fetch v0.20.0/go.mod h1:9inwDiGOpuo14Rp06TpcgsYSkvp4YM+uWCjgDmpXMNk=
 github.com/fluxcd/pkg/runtime v0.89.0 h1:bULflHbYBZm1HFp6M7SvQWLePBvmIjjT8fSavD5mIs0=
 github.com/fluxcd/pkg/runtime v0.89.0/go.mod h1:qkmPX009tgiWufQ2Vj0QhyNgEU+0Cnz7Xy/naihLM10=
-github.com/fluxcd/pkg/tar v0.15.0 h1:xoMLngTahZ0/j3CgM/9sLw1F0PkDwiZCRbu6hYxx0Gw=
-github.com/fluxcd/pkg/tar v0.15.0/go.mod h1:54zTMvJG+aWdoLcuhD2plTVODgxl5/w+mnoDVCcU34Y=
+github.com/fluxcd/pkg/tar v0.16.0 h1:P7hR2FjLBuI9AIndRqrZaO7VYFbbBzbYMBsLe2hh7fI=
+github.com/fluxcd/pkg/tar v0.16.0/go.mod h1:Bz1DmQ5vTY3/HLWw9LM0kHRL1vtgF4eVs5QmeRAD8UM=
 github.com/fluxcd/pkg/testserver v0.13.0 h1:xEpBcEYtD7bwvZ+i0ZmChxKkDo/wfQEV3xmnzVybSSg=
 github.com/fluxcd/pkg/testserver v0.13.0/go.mod h1:akRYv3FLQUsme15na9ihECRG6hBuqni4XEY9W8kzs8E=
 github.com/fluxcd/source-controller/api v1.7.3 h1:JCDbaJqAbQtjCt3Ijsm/6nZf+SZiby3/R6lVZ1gDllE=
