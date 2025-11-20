@@ -5,7 +5,7 @@ go 1.25.0
 require (
 	dario.cat/mergo v1.0.2
 	github.com/Masterminds/sprig/v3 v3.3.0
-	github.com/cyphar/filepath-securejoin v0.6.0
+	github.com/cyphar/filepath-securejoin v0.6.1
 	github.com/fluxcd/image-reflector-controller/api v1.0.4
 	github.com/fluxcd/kustomize-controller/api v1.7.2
 	github.com/fluxcd/pkg/apis/event v0.21.0
