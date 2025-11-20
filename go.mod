@@ -7,7 +7,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/cyphar/filepath-securejoin v0.6.1
 	github.com/fluxcd/image-reflector-controller/api v1.0.4
-	github.com/fluxcd/kustomize-controller/api v1.7.2
+	github.com/fluxcd/kustomize-controller/api v1.7.3
 	github.com/fluxcd/pkg/apis/event v0.21.0
 	github.com/fluxcd/pkg/apis/meta v1.23.0
 	github.com/fluxcd/pkg/http/fetch v0.21.0
