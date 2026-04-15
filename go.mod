@@ -12,7 +12,7 @@ require (
 	github.com/fluxcd/pkg/apis/meta v1.26.0
 	github.com/fluxcd/pkg/http/fetch v0.22.0
 	github.com/fluxcd/pkg/runtime v0.103.0
-	github.com/fluxcd/pkg/tar v0.17.0
+	github.com/fluxcd/pkg/tar v1.0.0
 	github.com/fluxcd/source-controller/api v1.8.2
 	github.com/gitops-tools/pkg v0.2.0
 	github.com/go-logr/logr v1.4.3
