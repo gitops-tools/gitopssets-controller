@@ -59,12 +59,12 @@ github.com/fluxcd/pkg/apis/kustomize v1.16.0 h1:PhWXEhqQqsisIpwp1/wHvTvo+MO+GGzs
 github.com/fluxcd/pkg/apis/kustomize v1.16.0/go.mod h1:IZOy4CCtR/hxMGb7erK1RfbGnczVv4/dRBoVD37AywI=
 github.com/fluxcd/pkg/apis/meta v1.26.0 h1:dxP1FfBpTCYso6odzRcltVnnRuBb2VyhhgV0VX9YbUE=
 github.com/fluxcd/pkg/apis/meta v1.26.0/go.mod h1:c7o6mJGLCMvNrfdinGZehkrdZuFT9vZdZNrn66DtVD0=
-github.com/fluxcd/pkg/http/fetch v0.22.0 h1:FT8CfstPE/e7+KRxNrx8ZJ1Uj5rkR5wXOtvQJurNQ0U=
-github.com/fluxcd/pkg/http/fetch v0.22.0/go.mod h1:X+8wF3peP79TyyDSgCJiavz+fAcYaf7CRXSeu7ccsPA=
+github.com/fluxcd/pkg/http/fetch v0.23.0 h1:o+af4bRHgOF28M7llESXakKbnCxvDqWhY0PsnSMAcmc=
+github.com/fluxcd/pkg/http/fetch v0.23.0/go.mod h1:XFd7KLsHanIvVSKZN8Hl9PHZhixRre98B4wQmW1DCHI=
 github.com/fluxcd/pkg/runtime v0.103.0 h1:J5y5GPhWdkyqIUBlaI1FP2N02TtZmsjbWhhZubuTSFk=
 github.com/fluxcd/pkg/runtime v0.103.0/go.mod h1:mbo2f3azo3yVQgm7XZGxQB6/2zvzQ5Wgtd8TjRRwwAw=
-github.com/fluxcd/pkg/tar v0.17.0 h1:uNxbFXy8ly8C7fJ8D7w3rjTNJFrb4Hp1aY/30XkfvxY=
-github.com/fluxcd/pkg/tar v0.17.0/go.mod h1:b1xyIRYDD0ket4SV5u0UXYv+ZdN/O/HmIO5jZQdHQls=
+github.com/fluxcd/pkg/tar v1.0.0 h1:C2FOHJsuEnU+giBm5aqYkIMxnpTKFIp3O2XJFj4o1/E=
+github.com/fluxcd/pkg/tar v1.0.0/go.mod h1:b1xyIRYDD0ket4SV5u0UXYv+ZdN/O/HmIO5jZQdHQls=
 github.com/fluxcd/pkg/testserver v0.13.0 h1:xEpBcEYtD7bwvZ+i0ZmChxKkDo/wfQEV3xmnzVybSSg=
 github.com/fluxcd/pkg/testserver v0.13.0/go.mod h1:akRYv3FLQUsme15na9ihECRG6hBuqni4XEY9W8kzs8E=
 github.com/fluxcd/source-controller/api v1.8.2 h1:i0/6BeNCn+zRfX+gKh4PsFF2NBzBhwXt0wPImVlZObg=
