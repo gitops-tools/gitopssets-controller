@@ -69,7 +69,7 @@ type localFetcher struct {
 	logger logr.Logger
 }
 
-func (l localFetcher) Fetch(archiveURL, checksum, dir string) error {
+func (l localFetcher) FetchWithContext(_ context.Context, archiveURL, checksum, dir string) error {
 	parsed, err := url.Parse(archiveURL)
 	if err != nil {
 		return err
