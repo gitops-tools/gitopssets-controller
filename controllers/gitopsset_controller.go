@@ -18,7 +18,6 @@ import (
 	"github.com/gitops-tools/pkg/sets"
 	"github.com/go-logr/logr"
 	corev1 "k8s.io/api/core/v1"
-	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/apis/meta/v1/unstructured"
@@ -249,41 +248,14 @@ func (r *GitOpsSetReconciler) renderAndReconcile(ctx context.Context, logger log
 			continue
 		}
 
-		if existingEntries.Has(ref) {
-			existing, err := unstructuredFromResourceRef(ref)
-			if err != nil {
-				inventoryErr = errors.Join(inventoryErr, fmt.Errorf("failed to convert resource for update: %w", err))
-				continue
-			}
-			// We can add the entry because we know it exists
-			entries.Insert(ref)
-			err = k8sClient.Get(ctx, client.ObjectKeyFromObject(newResource), existing)
-			if err == nil {
-				newResource = copyUnstructuredContent(existing, newResource)
-				if err := k8sClient.Patch(ctx, newResource, client.MergeFrom(existing)); err != nil {
-					inventoryErr = errors.Join(inventoryErr, fmt.Errorf("failed to update Resource: %w", err))
-				}
-				continue
-			}
-
-			if !apierrors.IsNotFound(err) {
-				inventoryErr = errors.Join(inventoryErr, fmt.Errorf("failed to load existing Resource: %w", err))
-				continue
-			}
-		}
-
-		if err := logResourceMessage(logger, "creating new resource", newResource); err != nil {
+		// Use server-side apply for both create and update operations
+		if err := logResourceMessage(logger, "applying resource", newResource); err != nil {
 			inventoryErr = errors.Join(inventoryErr, err)
 			continue
 		}
 
-		if err := k8sClient.Create(ctx, newResource); err != nil {
-			inventoryErr = errors.Join(inventoryErr, fmt.Errorf("failed to create Resource: %w", err))
-			if apierrors.IsAlreadyExists(err) {
-				if err := logResourceMessage(logger, "resource already exists", newResource); err != nil {
-					inventoryErr = errors.Join(inventoryErr, err)
-				}
-			}
+		if err := k8sClient.Patch(ctx, newResource, client.Apply, client.FieldOwner("gitopssets-controller")); err != nil {
+			inventoryErr = errors.Join(inventoryErr, fmt.Errorf("failed to apply Resource: %w", err))
 			continue
 		}
 
@@ -696,24 +668,6 @@ func unstructuredFromResourceRef(ref templatesv1.ResourceRef) (*unstructured.Uns
 	u.SetNamespace(objMeta.Namespace)
 
 	return &u, nil
-}
-
-func copyUnstructuredContent(existing, newValue *unstructured.Unstructured) *unstructured.Unstructured {
-	result := unstructured.Unstructured{}
-	existing.DeepCopyInto(&result)
-
-	disallowedKeys := sets.New("status", "metadata", "kind", "apiVersion")
-
-	for k, v := range newValue.Object {
-		if !disallowedKeys.Has(k) {
-			result.Object[k] = v
-		}
-	}
-
-	result.SetAnnotations(newValue.GetAnnotations())
-	result.SetLabels(newValue.GetLabels())
-
-	return &result
 }
 
 func logResourceMessage(logger logr.Logger, msg string, obj runtime.Object) error {
