@@ -9,7 +9,7 @@ require (
 	github.com/fluxcd/image-reflector-controller/api v1.1.2
 	github.com/fluxcd/kustomize-controller/api v1.8.5
 	github.com/fluxcd/pkg/apis/event v0.26.0
-	github.com/fluxcd/pkg/apis/meta v1.27.0
+	github.com/fluxcd/pkg/apis/meta v1.28.0
 	github.com/fluxcd/pkg/http/fetch v0.25.0
 	github.com/fluxcd/pkg/runtime v0.106.0
 	github.com/fluxcd/pkg/tar v1.2.0
