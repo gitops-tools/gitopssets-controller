@@ -11,7 +11,7 @@ require (
 	github.com/fluxcd/pkg/apis/event v0.26.0
 	github.com/fluxcd/pkg/apis/meta v1.29.0
 	github.com/fluxcd/pkg/http/fetch v0.25.0
-	github.com/fluxcd/pkg/runtime v0.107.0
+	github.com/fluxcd/pkg/runtime v0.108.0
 	github.com/fluxcd/pkg/tar v1.2.0
 	github.com/fluxcd/source-controller/api v1.8.5
 	github.com/gitops-tools/pkg v0.2.0
