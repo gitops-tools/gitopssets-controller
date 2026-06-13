@@ -9,7 +9,7 @@ require (
 	github.com/fluxcd/image-reflector-controller/api v1.1.2
 	github.com/fluxcd/kustomize-controller/api v1.8.5
 	github.com/fluxcd/pkg/apis/event v0.26.0
-	github.com/fluxcd/pkg/apis/meta v1.29.0
+	github.com/fluxcd/pkg/apis/meta v1.30.0
 	github.com/fluxcd/pkg/http/fetch v0.25.0
 	github.com/fluxcd/pkg/runtime v0.108.0
 	github.com/fluxcd/pkg/tar v1.2.0
@@ -42,7 +42,7 @@ require (
 	github.com/Azure/go-ansiterm v0.0.0-20230124172434-306776ec8161 // indirect
 	github.com/MakeNowJust/heredoc v1.0.0 // indirect
 	github.com/Masterminds/goutils v1.1.1 // indirect
-	github.com/Masterminds/semver/v3 v3.4.0 // indirect
+	github.com/Masterminds/semver/v3 v3.5.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/blang/semver/v4 v4.0.0 // indirect
 	github.com/bluekeyes/go-gitdiff v0.8.1 // indirect
