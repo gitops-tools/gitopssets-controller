@@ -19,7 +19,7 @@ require (
 	github.com/go-logr/zapr v1.3.0
 	github.com/google/go-cmp v0.7.0
 	github.com/google/go-containerregistry v0.21.6
-	github.com/jenkins-x/go-scm v1.15.28
+	github.com/jenkins-x/go-scm v1.15.30
 	github.com/onsi/gomega v1.41.0
 	github.com/spf13/cobra v1.10.2
 	github.com/spf13/pflag v1.0.10
@@ -29,7 +29,7 @@ require (
 	golang.org/x/exp v0.0.0-20251219203646-944ab1f22d93
 	k8s.io/api v0.36.1
 	k8s.io/apiextensions-apiserver v0.36.0
-	k8s.io/apimachinery v0.36.1
+	k8s.io/apimachinery v0.36.2
 	k8s.io/client-go v0.36.1
 	sigs.k8s.io/cli-utils v0.37.2
 	sigs.k8s.io/controller-runtime v0.24.1
