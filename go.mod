@@ -7,9 +7,9 @@ require (
 	github.com/Masterminds/sprig/v3 v3.3.0
 	github.com/cyphar/filepath-securejoin v0.7.0
 	github.com/fluxcd/image-reflector-controller/api v1.2.5
-	github.com/fluxcd/kustomize-controller/api v1.9.6
+	github.com/fluxcd/kustomize-controller/api v1.10.0
 	github.com/fluxcd/pkg/apis/event v0.30.0
-	github.com/fluxcd/pkg/apis/meta v1.32.0
+	github.com/fluxcd/pkg/apis/meta v1.38.0
 	github.com/fluxcd/pkg/http/fetch v0.26.0
 	github.com/fluxcd/pkg/runtime v0.115.0
 	github.com/fluxcd/pkg/tar v1.2.0
@@ -56,7 +56,7 @@ require (
 	github.com/exponent-io/jsonpath v0.0.0-20210407135951-1de76d718b3f // indirect
 	github.com/fluxcd/cli-utils v1.3.0 // indirect
 	github.com/fluxcd/pkg/apis/acl v0.11.0 // indirect
-	github.com/fluxcd/pkg/apis/kustomize v1.21.0 // indirect
+	github.com/fluxcd/pkg/apis/kustomize v1.23.0 // indirect
 	github.com/fsnotify/fsnotify v1.10.1 // indirect
 	github.com/fxamacker/cbor/v2 v2.9.3 // indirect
 	github.com/go-errors/errors v1.5.1 // indirect
@@ -115,13 +115,13 @@ require (
 	go.uber.org/multierr v1.11.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
 	go.yaml.in/yaml/v3 v3.0.5 // indirect
-	golang.org/x/crypto v0.56.0 // indirect
-	golang.org/x/net v0.58.0 // indirect
+	golang.org/x/crypto v0.58.0 // indirect
+	golang.org/x/net v0.61.0 // indirect
 	golang.org/x/oauth2 v0.37.0 // indirect
-	golang.org/x/sync v0.22.0 // indirect
-	golang.org/x/sys v0.47.0 // indirect
-	golang.org/x/term v0.45.0 // indirect
-	golang.org/x/text v0.41.0 // indirect
+	golang.org/x/sync v0.24.0 // indirect
+	golang.org/x/sys v0.49.0 // indirect
+	golang.org/x/term v0.47.0 // indirect
+	golang.org/x/text v0.43.0 // indirect
 	golang.org/x/time v0.15.0 // indirect
 	gomodules.xyz/jsonpatch/v2 v2.5.0 // indirect
 	google.golang.org/protobuf v1.36.12 // indirect
