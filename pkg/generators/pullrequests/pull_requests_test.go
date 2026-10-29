@@ -1,7 +1,9 @@
 package pullrequests
 
 import (
+	"context"
 	"fmt"
+	"strings"
 	"testing"
 	"time"
 
@@ -324,6 +326,77 @@ func TestGenerate(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestGenerateFollowsPullRequestPages(t *testing.T) {
+	client, _ := fakescm.NewDefault()
+	service := &paginatedPullRequestService{
+		pages: [][]*scm.PullRequest{
+			{{Number: 1, Fork: "test-org/my-repo"}},
+			{{Number: 2, Fork: "test-org/my-repo"}},
+		},
+	}
+	client.PullRequests = service
+	gen := NewGenerator(logr.Discard(), fake.NewFakeClient())
+	gen.clientFactory = func(_, _, _ string, _ ...factory.ClientOptionFunc) (*scm.Client, error) {
+		return client, nil
+	}
+
+	generator := &templatesv1.GitOpsSetGenerator{PullRequests: &templatesv1.PullRequestGenerator{
+		Driver: "fake",
+		Repo:   "test-org/my-repo",
+	}}
+	got, err := gen.Generate(t.Context(), generator, &templatesv1.GitOpsSet{})
+	test.AssertNoError(t, err)
+	if len(got) != 2 || got[0]["Number"] != "1" || got[1]["Number"] != "2" {
+		t.Fatalf("generated pull requests = %#v, want PRs 1 and 2", got)
+	}
+	if diff := cmp.Diff([]int{1, 2}, service.calls); diff != "" {
+		t.Fatalf("requested pages mismatch (-want +got):\n%s", diff)
+	}
+}
+
+func TestGenerateStopsAtPullRequestPageLimit(t *testing.T) {
+	client, _ := fakescm.NewDefault()
+	service := &paginatedPullRequestService{alwaysNext: true}
+	client.PullRequests = service
+	gen := NewGenerator(logr.Discard(), fake.NewFakeClient())
+	gen.clientFactory = func(_, _, _ string, _ ...factory.ClientOptionFunc) (*scm.Client, error) {
+		return client, nil
+	}
+
+	generator := &templatesv1.GitOpsSetGenerator{PullRequests: &templatesv1.PullRequestGenerator{
+		Driver: "fake",
+		Repo:   "test-org/my-repo",
+	}}
+	_, err := gen.Generate(t.Context(), generator, &templatesv1.GitOpsSet{})
+	if err == nil || !strings.Contains(err.Error(), "exceeded 50 pages") {
+		t.Fatalf("Generate() error = %v, want page-limit error", err)
+	}
+	if len(service.calls) != 50 {
+		t.Fatalf("requested %d pages, want 50", len(service.calls))
+	}
+}
+
+type paginatedPullRequestService struct {
+	scm.PullRequestService
+	pages      [][]*scm.PullRequest
+	calls      []int
+	alwaysNext bool
+}
+
+func (s *paginatedPullRequestService) List(_ context.Context, _ string, options *scm.PullRequestListOptions) ([]*scm.PullRequest, *scm.Response, error) {
+	page := options.Page
+	s.calls = append(s.calls, page)
+	var pulls []*scm.PullRequest
+	if page > 0 && page <= len(s.pages) {
+		pulls = s.pages[page-1]
+	}
+	response := &scm.Response{}
+	if s.alwaysNext || page < len(s.pages) {
+		response.Page.Next = page + 1
+	}
+	return pulls, response, nil
 }
 
 func TestGenerate_errors(t *testing.T) {

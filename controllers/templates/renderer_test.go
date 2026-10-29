@@ -29,6 +29,41 @@ const (
 	testNS            = "demo"
 )
 
+func TestTemplateFunctionsAreStable(t *testing.T) {
+	for _, name := range []string{
+		"genCA", "genSelfSignedCert", "genSignedCert", "genCAWithKey", "genSelfSignedCertWithKey", "genSignedCertWithKey",
+		"bcrypt", "htpasswd", "uuidv4", "now", "date", "dateInZone", "dateModify", "ago", "unixEpoch",
+		"randInt", "randBytes", "randNumeric", "randAlpha", "randAlphaNum", "randAscii",
+	} {
+		if _, ok := makeTemplateFunctions()[name]; ok {
+			t.Errorf("template function %q should be unavailable", name)
+		}
+	}
+}
+
+func TestToYAMLReturnsMarshalErrors(t *testing.T) {
+	_, err := render([]byte(`value: {{ toYaml .Value }}`), map[string]any{"Value": make(chan int)}, templatesv1.GitOpsSet{})
+	if err == nil {
+		t.Fatal("render() succeeded for a value that cannot be marshaled as YAML")
+	}
+}
+
+func TestRenderTemplateParamsDropsNullCreationTimestamp(t *testing.T) {
+	objects, err := renderTemplateParams(0, templatesv1.GitOpsSetTemplate{
+		Content: runtime.RawExtension{Raw: []byte(`{"apiVersion":"v1","kind":"ConfigMap","metadata":{"name":"example","creationTimestamp":null}}`)},
+	}, map[string]any{}, templatesv1.GitOpsSet{ObjectMeta: metav1.ObjectMeta{Name: "example-set", Namespace: "demo"}})
+	if err != nil {
+		t.Fatal(err)
+	}
+	metadata, ok := objects[0].Object["metadata"].(map[string]any)
+	if !ok {
+		t.Fatalf("metadata has unexpected type: %T", objects[0].Object["metadata"])
+	}
+	if _, exists := metadata["creationTimestamp"]; exists {
+		t.Fatal("rendered metadata still contains creationTimestamp")
+	}
+}
+
 func TestRender(t *testing.T) {
 	testGenerators := map[string]generators.Generator{
 		"List": list.NewGenerator(logr.Discard()),

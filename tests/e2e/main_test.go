@@ -16,6 +16,7 @@ import (
 	sourcev1 "github.com/fluxcd/source-controller/api/v1"
 	sourcev1beta2 "github.com/fluxcd/source-controller/api/v1beta2"
 	"github.com/gitops-tools/gitopssets-controller/test"
+	"github.com/go-logr/logr"
 	clustersv1 "github.com/weaveworks/cluster-controller/api/v1alpha1"
 	utilruntime "k8s.io/apimachinery/pkg/util/runtime"
 	"k8s.io/client-go/kubernetes/scheme"
@@ -54,6 +55,7 @@ func TestMain(m *testing.M) {
 	utilruntime.Must(imagev1.AddToScheme(scheme.Scheme))
 	utilruntime.Must(kustomizev1.AddToScheme(scheme.Scheme))
 	fetcher := fetch.NewArchiveFetcher(1, tar.UnlimitedUntarSize, tar.UnlimitedUntarSize, "")
+	ctrl.SetLogger(logr.Discard())
 
 	testEnv = testenv.New(testenv.WithCRDPath(filepath.Join("..", "..", "config", "crd", "bases"),
 		filepath.Join("..", "..", "controllers", "testdata", "crds"),

@@ -361,7 +361,7 @@ func TestReconcilingUpdatingImagePolicy_in_matrix(t *testing.T) {
 	ctx := t.Context()
 	ip := test.NewImagePolicy()
 
-	test.AssertNoError(t, testEnv.Create(ctx, test.ToUnstructured(t, ip)))
+	test.AssertNoError(t, testEnv.CreateAndWait(ctx, test.ToUnstructured(t, ip)))
 	defer deleteObject(t, testEnv, ip)
 
 	test.AssertNoError(t, testEnv.Get(ctx, client.ObjectKeyFromObject(ip), ip))
