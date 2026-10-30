@@ -266,6 +266,20 @@ LocalObjectReference
 provides the Certificate Authority to trust when making API calls.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>allowClusterNetwork</code><br />
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>AllowClusterNetwork permits requests to loopback, private, and in-cluster
+addresses when true. If omitted or false, those destinations are denied.
+Link-local, unspecified, and multicast addresses are always denied.</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="sets.gitops.pro/v1alpha1.ClusterGenerator">ClusterGenerator

@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"context"
 	"encoding/json"
 	"path/filepath"
 	"sort"
@@ -735,6 +736,35 @@ func TestReconciliation(t *testing.T) {
 		assertNoKustomizationsExistInNamespace(t, k8sClient, "default")
 	})
 
+	t.Run("deleting a suspended set cleans its inventory", func(t *testing.T) {
+		ctx := t.Context()
+		gs := createAndReconcileToFinalizedState(t, k8sClient, reconciler, makeTestGitOpsSet(t))
+		deleted := false
+		defer func() {
+			if !deleted {
+				deleteGitOpsSetAndFinalize(t, k8sClient, reconciler, gs)
+			}
+		}()
+
+		_, err := reconciler.Reconcile(ctx, ctrl.Request{NamespacedName: client.ObjectKeyFromObject(gs)})
+		test.AssertNoError(t, err)
+		test.AssertNoError(t, k8sClient.Get(ctx, client.ObjectKeyFromObject(gs), gs))
+		assertKustomizationsExist(t, k8sClient, "default", "engineering-dev-demo", "engineering-prod-demo", "engineering-preprod-demo")
+
+		gs.Spec.Suspend = true
+		test.AssertNoError(t, k8sClient.Update(ctx, gs))
+		test.AssertNoError(t, k8sClient.Delete(ctx, gs))
+
+		_, err = reconciler.Reconcile(ctx, ctrl.Request{NamespacedName: client.ObjectKeyFromObject(gs)})
+		test.AssertNoError(t, err)
+
+		if err := k8sClient.Get(ctx, client.ObjectKeyFromObject(gs), &templatesv1.GitOpsSet{}); !apierrors.IsNotFound(err) {
+			t.Fatalf("GitOpsSet still exists after finalization: %v", err)
+		}
+		deleted = true
+		assertNoKustomizationsExistInNamespace(t, k8sClient, "default")
+	})
+
 	t.Run("reconciling when gitrepository has no artifact", func(t *testing.T) {
 		ctx := t.Context()
 		emptyGR := test.NewGitRepository()
@@ -884,6 +914,47 @@ func TestGetClusterSelectors(t *testing.T) {
 				t.Fatalf("failed to get selectors:\n%s", diff)
 			}
 		})
+	}
+}
+
+func TestIndexConfigIncludesGeneratorReferences(t *testing.T) {
+	gitOpsSet := &templatesv1.GitOpsSet{
+		ObjectMeta: metav1.ObjectMeta{Namespace: "demo"},
+		Spec: templatesv1.GitOpsSetSpec{
+			Generators: []templatesv1.GitOpsSetGenerator{
+				{
+					PullRequests: &templatesv1.PullRequestGenerator{
+						SecretRef: &templatesv1.LocalObjectReference{Name: "pr-token"},
+					},
+					APIClient: &templatesv1.APIClientGenerator{
+						SecretRef:  &templatesv1.LocalObjectReference{Name: "api-ca"},
+						HeadersRef: &templatesv1.HeadersReference{Kind: "Secret", Name: "api-auth"},
+					},
+				},
+				{
+					Matrix: &templatesv1.MatrixGenerator{
+						Generators: []templatesv1.GitOpsSetNestedGenerator{
+							{
+								PullRequests: &templatesv1.PullRequestGenerator{
+									SecretRef: &templatesv1.LocalObjectReference{Name: "matrix-pr-token"},
+								},
+								APIClient: &templatesv1.APIClientGenerator{
+									SecretRef:  &templatesv1.LocalObjectReference{Name: "matrix-api-ca"},
+									HeadersRef: &templatesv1.HeadersReference{Kind: "ConfigMap", Name: "matrix-api-headers"},
+								},
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	if got, want := indexConfig("Secret")(gitOpsSet), []string{"demo/pr-token", "demo/api-ca", "demo/api-auth", "demo/matrix-pr-token", "demo/matrix-api-ca"}; cmp.Diff(want, got) != "" {
+		t.Fatalf("Secret index mismatch (-want +got):\n%s", cmp.Diff(want, got))
+	}
+	if got, want := indexConfig("ConfigMap")(gitOpsSet), []string{"demo/matrix-api-headers"}; cmp.Diff(want, got) != "" {
+		t.Fatalf("ConfigMap index mismatch (-want +got):\n%s", cmp.Diff(want, got))
 	}
 }
 
@@ -1135,7 +1206,9 @@ func assertInventoryHasNoItems(t *testing.T, gs *templatesv1.GitOpsSet) {
 
 func deleteObject(t *testing.T, cl client.Client, obj client.Object) {
 	t.Helper()
-	if err := cl.Delete(t.Context(), obj); err != nil {
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := cl.Delete(ctx, obj); err != nil {
 		t.Fatal(err)
 	}
 }

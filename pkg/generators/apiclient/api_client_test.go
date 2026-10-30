@@ -219,6 +219,8 @@ func TestGenerate(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
+			allowClusterNetwork := true
+			tt.apiClient.AllowClusterNetwork = &allowClusterNetwork
 			factory := func(_ *tls.Config) *http.Client {
 				return ts.Client()
 			}
@@ -342,6 +344,8 @@ func TestGenerate_errors(t *testing.T) {
 
 	for _, tt := range testCases {
 		t.Run(tt.name, func(t *testing.T) {
+			allowClusterNetwork := true
+			tt.apiClient.AllowClusterNetwork = &allowClusterNetwork
 			factory := func(_ *tls.Config) *http.Client {
 				return ts.Client()
 			}

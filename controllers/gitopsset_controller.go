@@ -124,12 +124,6 @@ func (r *GitOpsSetReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 		return ctrl.Result{Requeue: true}, nil
 	}
 
-	// Skip reconciliation if the GitOpsSet is suspended.
-	if gitOpsSet.Spec.Suspend {
-		logger.Info("Reconciliation is suspended for this GitOpsSet")
-		return ctrl.Result{}, nil
-	}
-
 	k8sClient := r.Client
 	if gitOpsSet.Spec.ServiceAccountName != "" || r.DefaultServiceAccount != "" {
 		serviceAccountName := r.DefaultServiceAccount
@@ -145,6 +139,12 @@ func (r *GitOpsSetReconciler) Reconcile(ctx context.Context, req ctrl.Request) (
 
 	if !gitOpsSet.ObjectMeta.DeletionTimestamp.IsZero() {
 		return r.finalize(ctx, &gitOpsSet, k8sClient)
+	}
+
+	// Skip reconciliation if the GitOpsSet is suspended.
+	if gitOpsSet.Spec.Suspend {
+		logger.Info("Reconciliation is suspended for this GitOpsSet")
+		return ctrl.Result{}, nil
 	}
 
 	// Set the value of the reconciliation request in status.
@@ -370,7 +370,7 @@ func (r *GitOpsSetReconciler) SetupWithManager(mgr ctrl.Manager) error {
 			handler.EnqueueRequestsFromMapFunc(r.secretToGitOpsSet),
 		)
 
-	if r.Generators["Config"] != nil {
+	if r.Generators["Config"] != nil || r.Generators["APIClient"] != nil {
 		builder.Watches(
 			&corev1.ConfigMap{},
 			handler.EnqueueRequestsFromMapFunc(r.configMapToGitOpsSet),
@@ -438,8 +438,7 @@ func (r *GitOpsSetReconciler) finalize(ctx context.Context, gs *templatesv1.GitO
 	logger := ctrl.LoggerFrom(ctx)
 	logger.Info("finalizing resources")
 
-	if !gs.Spec.Suspend &&
-		gs.Status.Inventory != nil &&
+	if gs.Status.Inventory != nil &&
 		gs.Status.Inventory.Entries != nil {
 
 		if err := r.removeResourceRefs(ctx, k8sClient, gs.Status.Inventory.Entries); err != nil {
@@ -623,27 +622,40 @@ func indexConfig(kind string) func(o client.Object) []string {
 			panic(fmt.Sprintf("Expected a GitOpsSet, got %T", o))
 		}
 
-		referencedResources := []*templatesv1.ConfigGenerator{}
-		for _, gen := range ks.Spec.Generators {
-			if gen.Config != nil && gen.Config.Kind == kind {
-				referencedResources = append(referencedResources, gen.Config)
+		referencedNames := []string{}
+		addConfig := func(config *templatesv1.ConfigGenerator) {
+			if config != nil && config.Kind == kind {
+				referencedNames = append(referencedNames, fmt.Sprintf("%s/%s", ks.GetNamespace(), config.Name))
 			}
+		}
+		addSecret := func(secret *templatesv1.LocalObjectReference) {
+			if kind == "Secret" && secret != nil {
+				referencedNames = append(referencedNames, fmt.Sprintf("%s/%s", ks.GetNamespace(), secret.Name))
+			}
+		}
+		addHeaders := func(headers *templatesv1.HeadersReference) {
+			if headers != nil && headers.Kind == kind {
+				referencedNames = append(referencedNames, fmt.Sprintf("%s/%s", ks.GetNamespace(), headers.Name))
+			}
+		}
+		addGeneratorReferences := func(pullRequests *templatesv1.PullRequestGenerator, apiClient *templatesv1.APIClientGenerator, config *templatesv1.ConfigGenerator) {
+			addConfig(config)
+			if pullRequests != nil {
+				addSecret(pullRequests.SecretRef)
+			}
+			if apiClient != nil {
+				addSecret(apiClient.SecretRef)
+				addHeaders(apiClient.HeadersRef)
+			}
+		}
+
+		for _, gen := range ks.Spec.Generators {
+			addGeneratorReferences(gen.PullRequests, gen.APIClient, gen.Config)
 			if gen.Matrix != nil && gen.Matrix.Generators != nil {
 				for _, matrixGen := range gen.Matrix.Generators {
-					if matrixGen.Config != nil && matrixGen.Config.Kind == kind {
-						referencedResources = append(referencedResources, matrixGen.Config)
-					}
+					addGeneratorReferences(matrixGen.PullRequests, matrixGen.APIClient, matrixGen.Config)
 				}
 			}
-		}
-
-		if len(referencedResources) == 0 {
-			return nil
-		}
-
-		referencedNames := []string{}
-		for _, grg := range referencedResources {
-			referencedNames = append(referencedNames, fmt.Sprintf("%s/%s", ks.GetNamespace(), grg.Name))
 		}
 
 		return referencedNames

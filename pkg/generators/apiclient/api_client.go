@@ -85,6 +85,9 @@ func (g *APIClientGenerator) Generate(ctx context.Context, sg *templatesv1.GitOp
 	}
 
 	client := g.ClientFactory(tlsConfig)
+	if err := applyAddressPolicy(client, allowsClusterNetwork(sg.APIClient)); err != nil {
+		return nil, err
+	}
 
 	resp, err := client.Do(req)
 	if err != nil {
@@ -137,13 +140,16 @@ func (g *APIClientGenerator) createRequest(ctx context.Context, ac *templatesv1.
 		body = bytes.NewReader(ac.Body.Raw)
 	}
 
-	// Validate scheme to http/https only and ensure URL parses correctly.
+	// Validate scheme and destination before loading credentials or sending a request.
 	u, err := url.Parse(ac.Endpoint)
 	if err != nil {
 		return nil, fmt.Errorf("invalid endpoint URL %q: %w", ac.Endpoint, err)
 	}
 	if u.Scheme != "http" && u.Scheme != "https" {
 		return nil, fmt.Errorf("unsupported URL scheme %q for endpoint %s", u.Scheme, ac.Endpoint)
+	}
+	if err := validateEndpointAddress(ctx, u, allowsClusterNetwork(ac)); err != nil {
+		return nil, err
 	}
 
 	req, err := http.NewRequestWithContext(ctx, method, ac.Endpoint, body)
@@ -165,6 +171,10 @@ func (g *APIClientGenerator) createRequest(ctx context.Context, ac *templatesv1.
 	}
 
 	return req, nil
+}
+
+func allowsClusterNetwork(apiClient *templatesv1.APIClientGenerator) bool {
+	return apiClient != nil && apiClient.AllowClusterNetwork != nil && *apiClient.AllowClusterNetwork
 }
 
 func (g *APIClientGenerator) createTLSConfig(ctx context.Context, ac *templatesv1.APIClientGenerator, namespace string) (*tls.Config, error) {
