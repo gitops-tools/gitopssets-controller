@@ -10,7 +10,7 @@ require (
 	github.com/fluxcd/kustomize-controller/api v1.10.1
 	github.com/fluxcd/pkg/apis/event v0.32.0
 	github.com/fluxcd/pkg/apis/meta v1.38.0
-	github.com/fluxcd/pkg/http/fetch v0.26.0
+	github.com/fluxcd/pkg/http/fetch v0.31.0
 	github.com/fluxcd/pkg/runtime v0.122.0
 	github.com/fluxcd/pkg/tar v1.4.0
 	github.com/fluxcd/source-controller/api v1.10.1
@@ -95,7 +95,7 @@ require (
 	github.com/monochromegane/go-gitignore v0.0.0-20200626010858-205db1a8cc00 // indirect
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
-	github.com/opencontainers/go-digest/blake3 v0.0.0-20250116041648-1e56c6daea3b // indirect
+	github.com/opencontainers/go-digest/blake3 v0.0.0-20261015205711-63db54280247 // indirect
 	github.com/peterbourgon/diskv v2.0.1+incompatible // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
