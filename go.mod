@@ -22,7 +22,7 @@ require (
 	github.com/jenkins-x/go-scm v1.17.1
 	github.com/onsi/gomega v1.44.0
 	github.com/spf13/cobra v1.10.2
-	github.com/spf13/pflag v1.0.10
+	github.com/spf13/pflag v1.1.0
 	github.com/stretchr/testify v1.12.1
 	github.com/weaveworks/cluster-controller v1.6.0
 	go.uber.org/zap v1.28.0
